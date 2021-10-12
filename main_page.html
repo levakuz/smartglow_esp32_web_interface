@@ -71,6 +71,15 @@
         left: 0;
         display: none;
       }
+    #change_device_mode_popup{
+        background: rgba(102, 102, 102, 0.5);
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+      }
     #okno {
         width: 300px;
         height: 500px;
@@ -87,9 +96,26 @@
         background: #fff;
       }
     #register_device_window {
-        width: 700px;
-        height: 600px;
+        width: 900px;
         text-align: center;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        border-radius: 10px;
+        color: #0000cc;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        background: #fff;
+      }
+    #change_device_mode_window {
+        width: 900px;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
         padding: 15px;
         border-radius: 10px;
         color: #0000cc;
@@ -103,6 +129,7 @@
       }
       #zatemnenie:target {display: block;}
       #register_device_popup:target {display: block;}
+      #change_device_mode_popup:target {display: block;}
       .close {
         display: inline-block;
         border: 1px solid #0000cc;
@@ -115,6 +142,67 @@
         cursor:pointer;
       }
       .close:hover {background: #e6e6ff;}
+  .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+  /* The slider */
+  .slider_round {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  .slider_round:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  input:checked + .slider_round {
+    background-color: #2196F3;
+  }
+
+  input:focus + .slider_round {
+    box-shadow: 0 0 1px #2196F3;
+  }
+
+  input:checked + .slider_round:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+
+  /* Rounded sliders */
+  .slider_round {
+    border-radius: 34px;
+  }
+
+  .slider_round:before {
+    border-radius: 50%;
+  }
   </style>
   <meta charset="UTF-8">
   <title>SMARTGLOW v.0.1</title>
@@ -163,6 +251,7 @@
         <tr>
             <th>ID</th>
             <th>Имя устройства</th>
+            <th>Режим работы</th>
             <th>Конфигурация</th>
             <th>Удалить устройство</th>
         </tr>
@@ -260,6 +349,19 @@
           </div>
         </div>
   </div>
+  <div id="change_device_mode_popup">
+    <div id="change_device_mode_window">
+      <h2 class="h1">Изменение режима работы устройства</h2>
+      <br/>
+      <br/>
+      <div style="align-self: center">
+      <form>
+
+        <br/>
+      </form>
+    </div>
+  </div>
+  </div>
 
 
 </body>
@@ -308,6 +410,7 @@
   let newCell1 = newRow.insertCell(1);
   let newCell2 = newRow.insertCell(2);
   let newCell3 = newRow.insertCell(3);
+  let newCell4 = newRow.insertCell(4);
 
   // Append a text node to the cell
   let newText = document.createTextNode('New top row');
@@ -332,14 +435,99 @@
     "      height: 39px;\n" +
     "      margin-left: 0px;";
   button.addEventListener ("click", register_new_device);
+  let working_mode_div = document.createElement("div");
+  working_mode_div.style.display="flex"
+    working_mode_div.style.alignItems="center"
+  working_mode_div.style.flexDirection="column"
+  let working_mode_text = document.createTextNode('Ручной');
+  let working_mode_button = document.createElement("button");
+  working_mode_button.innerHTML = "Изменить режим работы";
+  working_mode_button.style.cssText = "      margin-top: 20px;\n" +
+    "      background: #4C5DB8;\n" +
+    "      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);\n" +
+    "      border-radius: 15px;\n" +
+    "      width: 200px;\n" +
+    "      height: 39px;\n" +
+    "      margin-left: 0px;";
+  working_mode_button.addEventListener ("click", create_change_device_mode_window);
+  working_mode_div.appendChild(working_mode_text);
+  working_mode_div.appendChild(working_mode_button);
   newCell.appendChild(newText);
   newCell1.appendChild(newText1);
-  newCell2.appendChild(button);
-  newCell3.appendChild(button1);
+  newCell2.appendChild(working_mode_div);
+  newCell3.appendChild(button);
+  newCell4.appendChild(button1);
 
   }
+
   addRowToRegisteredDevices();
   let device_id = 1
+
+  function create_change_device_mode_window(){
+    let change_device_mode_window = document.getElementById('change_device_mode_window');
+    change_device_mode_window.innerHTML ='';
+    window.location.href='#change_device_mode_popup'
+    let header = document.createElement("h2")
+    header.classList.add("h1")
+    change_device_mode_window.appendChild(header)
+    header.textContent = "Изменение режима работы устройства"
+    let header2 = document.createElement("h2")
+    header2.classList.add("h2")
+    change_device_mode_window.appendChild(header2)
+    header2.textContent = "Имя модуля"
+    let div1 = document.createElement("div")
+    change_device_mode_window.appendChild(div1)
+    let manual_mode_text = document.createElement("h2")
+    manual_mode_text.classList.add("h2")
+    manual_mode_text.textContent = "Ручной режим"
+    div1.appendChild(manual_mode_text)
+    let switch_label = document.createElement("label")
+    switch_label.classList.add("switch")
+    div1.appendChild(switch_label)
+    let input1 = document.createElement("input")
+    input1.type = "checkbox"
+    switch_label.appendChild(input1)
+    let span = document.createElement("span")
+    span.classList.add("slider_round")
+    switch_label.appendChild(span)
+    let br = document.createElement("br")
+    change_device_mode_window.appendChild(br)
+    let div2 = document.createElement("div")
+    change_device_mode_window.appendChild(div2)
+    let turn_on_device_text = document.createElement("h2")
+    turn_on_device_text.classList.add("h2")
+    turn_on_device_text.textContent = "Включить/Выключить устройство"
+    div2.appendChild(turn_on_device_text)
+    let switch_label2 = document.createElement("label")
+    switch_label2.classList.add("switch")
+    div2.appendChild(switch_label2)
+    let input2 = document.createElement("input")
+    input2.type = "checkbox"
+    switch_label2.appendChild(input2)
+    let span2 = document.createElement("span")
+    span2.classList.add("slider_round")
+    switch_label2.appendChild(span2)
+    let div3 = document.createElement("div")
+    change_device_mode_window.appendChild(div3)
+    let param_input_text = document.createElement("h2")
+    param_input_text.classList.add("h2")
+    param_input_text.textContent = "Изменить величину регулирования"
+    div3.appendChild(param_input_text)
+    let param_input = document.createElement("select");
+    param_input.id = "param_input";
+    div3.appendChild(param_input)
+    let cancel_button = document.createElement("button")
+    cancel_button.classList.add("button")
+    cancel_button.addEventListener("click",go_back);
+    cancel_button.textContent = "Отменить"
+    change_device_mode_window.appendChild(cancel_button)
+    let save_button = document.createElement("button")
+    save_button.classList.add("button")
+    save_button.addEventListener("click",saveSettings);
+    save_button.textContent = "Сохранить"
+    change_device_mode_window.appendChild(save_button)
+    fill_pwd_input(param_input.id)
+  }
   function register_new_device() {
      window.location.href='#register_device_popup'
      document.getElementById('device_id').innerHTML = 'Устройство управления группой: ' + device_id;
@@ -373,11 +561,12 @@
     // div2.style = "display: flex; flex-direction: row;"
     // div1.appendChild(div2)
     // let label = document.createElement("")
+    let device_list = [1]
     AddSensorDevice(1)
     addMechDevice(1)
     let register_device_window = document.getElementById("register_device_window")
     let div3 = document.createElement("div")
-    div3.style = "display: flex; flex-direction: row; margin-left: 150px"
+    div3.style = "display: flex; flex-direction: row; justify-content: center"
     register_device_window.appendChild(div3)
     let cancel_button = document.createElement("button")
     cancel_button.classList.add("button")
@@ -389,6 +578,9 @@
     save_button.addEventListener("click",saveSettings);
     save_button.textContent = "Сохранить"
     div3.appendChild(save_button)
+    let new_lenght =  device_list.length * 700
+    let register_device_popup = document.getElementById("register_device_window")
+    register_device_popup.style = "height: " + new_lenght.toString() + "px"
   }
   function go_back(){
     window.location.href='#'
@@ -458,10 +650,17 @@
     table.appendChild(caption)
     let caption_text = document.createElement("p");
     caption_text.textContent = "Циклы работы"
-    caption_text.style = "font-size: 18px"
+    caption_text.style = "font-size: 18px;"
     caption_div.appendChild(caption_text);
+    let add_row_button = document.createElement("button");
+    add_row_button.style = "border: none; background-color: white; margin-left: 10px; margin-right: 400px"
+    caption_div.appendChild(add_row_button);
+    let add_row_img = document.createElement("img");
+    add_row_img.src = "plus-icon.png"
+    add_row_img.style = "width: 30px; height: 30px"
+    add_row_button.appendChild(add_row_img);
     let refresh_button = document.createElement("button");
-    refresh_button.style = "border: none; background-color: white; padding-left: 400px"
+    refresh_button.style = "border: none; background-color: white; margin-left: 200px"
     caption_div.appendChild(refresh_button);
     let refresh_img = document.createElement("img");
     refresh_img.src = "refresh.png"
@@ -472,6 +671,7 @@
     let tr = document.createElement("tr")
     thead.appendChild(tr);
     let th1 = document.createElement("th")
+    th1.style="width:200px"
     th1.textContent = "Степень ШИМ"
     tr.appendChild(th1);
     let th2 = document.createElement("th")
@@ -485,6 +685,7 @@
     tr.appendChild(th4);
     let th5 = document.createElement("th")
     th5.textContent = "Выключено"
+    th5.style="width 200px"
     tr.appendChild(th5);
     let tbody = document.createElement("tbody")
     table.appendChild(tbody)
@@ -493,6 +694,10 @@
     config_window.appendChild(header);
     config_window.appendChild(table);
     addRowToMechDevice(table.id, device_id)
+    add_row_button.onclick = function (event){
+      addRowToMechDevice(table.id, device_id)
+    }
+
 
 
   }
@@ -541,6 +746,12 @@
     fill_time_input(select_time_off.id)
     fill_time_type_input(select_time_type_on.id)
     fill_time_type_input(select_time_type_off.id)
+    let register_device_window_height = document.getElementById("register_device_window").style.height;
+    register_device_window_height=register_device_window_height.replace("px","");
+    register_device_window_height =+ register_device_window_height;
+    let n = register_device_window_height
+    register_device_window_height = n + 50 + 'px';
+    document.getElementById("register_device_window").style.height = register_device_window_height
   }
   // addRowToMechDevice('mech_device_table_1', 1)
   function showCurrentTime(value){ //установка текущего времени
