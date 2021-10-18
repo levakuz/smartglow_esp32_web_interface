@@ -360,9 +360,99 @@
 
 </body>
 <script>
+
+  function fetch_unregistered_devices(){
+   fetch("http://192.168.1.51/get_unregistered_devices", { method: 'GET' })
+    .then(response => {
+        // response.headers.forEach(function(value, name) {
+        //     console.log(name + ": " + value);
+        // });
+        let count_of_devices =  parseInt(response.headers.get('count_of_devices'), 10)
+        let device_ids = response.headers.get('device_ids')
+        let device_types = response.headers.get('device_types')
+        device_ids = device_ids.split(',')
+        device_types = device_types.split(',')
+        for (let i = 0; i < count_of_devices; i++){
+          addRowToUnregisteredDevices(device_ids[i], device_types[i]);
+        }
+    })
+    .catch(function(err) {
+        console.info(err + " url: " + "http://localhost/get_unregistered_devices");
+    });
+  }
+  function fetch_registered_devices(){
+   fetch("http://192.168.1.51/get_registered_devices", { method: 'GET' })
+    .then(response => {
+        // response.headers.forEach(function(value, name) {
+        //     console.log(name + ": " + value);
+        // });
+      console.log("get_registered_devices")
+        let count_of_devices =  parseInt(response.headers.get('count_of_devices'), 10)
+        let device_ids = response.headers.get('device_ids')
+        let device_names = response.headers.get('device_names')
+        device_ids = device_ids.split(',')
+        device_names = device_names.split(',')
+        for (let i = 0; i < count_of_devices; i++){
+          addRowToRegisteredDevices(device_ids[i], device_names[i]);
+        }
+    })
+    .catch(function(err) {
+        console.info(err + " url: " + "http://localhost/get_unregistered_devices");
+    });
+  }
+  fetch_registered_devices()
+  fetch_unregistered_devices()
+  function fetch_info_registered_device(device_id){
+   fetch("http://192.168.1.51/get_info_registered_device", {
+     method: 'GET' ,
+     // mode: 'no-cors',
+     // headers: {
+     //  'Access-Control-Allow-Origin': '*',
+     //  'Access-Control-Expose-Headers': '*',
+     //  'device_id': device_id,
+     // }
+   }
+   )
+    .then(response => {
+        response.headers.forEach(function(value, name) {
+            console.log(name + ": " + value);
+        });
+        console.log("get_info_registered_device")
+        let count_of_devices =  parseInt(response.headers.get('count_of_devices'), 10)
+        let device_name = response.headers.get('device_name')
+        let count_of_sensor_modules = response.headers.get('count_of_sensor_modules')
+        let sensors_names = response.headers.get('sensors_names').split(',')
+        let sensor_indications = response.headers.get('sensor_indications').split(',')
+        let sensor_values = response.headers.get('sensor_values').split(',')
+        let count_of_device_modules = response.headers.get('count_of_device_modules').split(',')
+        let count_of_cycles_in_device_moduls = response.headers.get('count_of_cycles_in_device_moduls').split(',')
+        let pwm_powers = response.headers.get('pwm_powers').split(';')
+        let work_mode = response.headers.get('work_mode').split(',')
+        let cycle_begin = response.headers.get('cycle_begin').split(';')
+        let cycle_end = response.headers.get('cycle_end').split(';')
+        let turn_on = response.headers.get('turn_on').split(';')
+        let turn_off = response.headers.get('turn_off').split(';')
+        for (let i = 0; i < count_of_sensor_modules; i++){
+          console.log(sensor_values[i].split(' '))
+          AddSensorDevice(i, sensors_names[i], sensor_indications[i],sensor_values[i])
+        }
+        for (let i = 0; i < count_of_device_modules; i++){
+          console.log(sensor_values[i].split(' '))
+          addMechDevice(i, count_of_cycles_in_device_moduls[i], pwm_powers[i], work_mode[i], cycle_begin[i], cycle_end[i], turn_on[i], turn_off[i])
+        }
+        // device_names = device_names.split(',')
+        // for (let i = 0; i < count_of_devices; i++){
+        //   addRowToRegisteredDevices(device_ids[i], device_names[i]);
+        // }
+    })
+    // .catch(function(err) {
+    //     console.info(err + " url: " + "http://192.168.1.51/get_info_registered_device");
+    // });
+  }
+  fetch_info_registered_device("123")
   let id = "123123"
   document.getElementById('id').innerHTML = 'Модуль: ' + id;
-  function addRowToUnregisteredDevices() { //добавление записи в таблицу
+  function addRowToUnregisteredDevices(device_id, device_type) { //добавление записи в таблицу
   // Get a reference to the table
   let tableRef = document.getElementById('unregistered_devices');
 
@@ -375,8 +465,8 @@
   let newCell2 = newRow.insertCell(2);
 
   // Append a text node to the cell
-  let newText = document.createTextNode('New top row');
-  let newText1 = document.createTextNode('New top row');
+  let newText = document.createTextNode(device_id);
+  let newText1 = document.createTextNode(device_type);
   let button = document.createElement("button");
   button.innerHTML = "Зарегистрировать устройство";
   button.style.cssText = "      margin-top: 20px;\n" +
@@ -391,8 +481,8 @@
   newCell1.appendChild(newText1);
   newCell2.appendChild(button);
   }
-  addRowToUnregisteredDevices();
-  function addRowToRegisteredDevices() { //добавление записи в таблицу
+
+  function addRowToRegisteredDevices(device_id, device_name) { //добавление записи в таблицу
   // Get a reference to the table
   let tableRef = document.getElementById('registered_devices');
 
@@ -406,8 +496,8 @@
   let newCell3 = newRow.insertCell(3);
 
   // Append a text node to the cell
-  let newText = document.createTextNode('New top row');
-  let newText1 = document.createTextNode('New top row');
+  let newText = document.createTextNode(device_id);
+  let newText1 = document.createTextNode(device_name);
   let button = document.createElement("button");
   button.innerHTML = "Просмотр/редактирование конфигурации";
   button.style.cssText = "      margin-top: 20px;\n" +
@@ -435,7 +525,6 @@
 
   }
 
-  addRowToRegisteredDevices();
   let device_id = 1
 
   function create_change_device_mode_window(){
@@ -528,8 +617,8 @@
   }
   function create_config_window(){
     let device_list = [1]
-    AddSensorDevice(1)
-    addMechDevice(1)
+    // AddSensorDevice(1)
+    // addMechDevice(1)
     let register_device_window = document.getElementById("register_device_window")
     let div3 = document.createElement("div")
     div3.style = "display: flex; flex-direction: row; justify-content: center"
@@ -554,19 +643,19 @@
   function go_back_to_config_window(){
     window.location.href='#register_device_popup'
   }
-  create_config_window()
-  function AddSensorDevice(device_id){
+
+  function AddSensorDevice(device_id,device_name, indication, values){
     let config_window = document.getElementById('register_device_window');
     let div = document.createElement('div');
     let header = document.createElement('h2');
-    header.textContent = "Имя модуля";
+    header.textContent = device_name;
     config_window.appendChild(header);
     let table = document.createElement("table");
     table.id = 'sensor_device_table_' + device_id.toString()
     table.classList.add("styled-table");
     table.style = "margin-left: 50px; margin-top: 0px"
     config_window.appendChild(table);
-        let thead = document.createElement("thead");
+    let thead = document.createElement("thead");
     table.appendChild(thead);
     let tr = document.createElement("tr")
     thead.appendChild(tr);
@@ -593,7 +682,9 @@
     input.type = "text";
     input.list = "time_values" + device_id.toString();
     // console.log(input.list.id)
-
+    let newText1 = document.createTextNode(indication);
+    newCell.appendChild(newText1)
+    values = values.split(' ')
     input.style = "width: 75px; margin-right: 10px";
     let datalist = document.createElement("datalist");
     datalist.id = "time_values" + device_id.toString();
@@ -602,6 +693,12 @@
     let input_time_measure_datalist = document.createElement("select");
     input_time_measure_datalist.id = "channel_time" + device_id.toString();
     input_time_measure_datalist.style = "width: 100px";
+    let time_type;
+    if (values[1] === 'secs'){time_type = 'секунды'}
+    if (values[1] === 'mins'){time_type = 'минуты'}
+    if (values[1] === 'hours'){time_type = 'часы'}
+    console.log(time_type)
+    console.log(values[0])
     newCell1.appendChild(div);
     div.appendChild(label);
     div.appendChild(input);
@@ -611,10 +708,12 @@
     console.log(datalist.id)
     fill_time_input(input.id)
     fill_time_type_input(input_time_measure_datalist.id)
+    input_time_measure_datalist.value = time_type
+    input.value = values[0]
 
   }
   // AddSensorDevice(1)
-  function addMechDevice(device_id){
+  function addMechDevice(i, count_of_cycles_in_device_moduls, pwm_powers, work_mode, cycle_begin, cycle_end, turn_on, turn_off){
     let config_window = document.getElementById('register_device_window');
     let header = document.createElement("h2");
     header.textContent = "Имя модуля";
@@ -677,9 +776,23 @@
     tbody.appendChild(tr2)
     config_window.appendChild(header);
     config_window.appendChild(table);
-    addRowToMechDevice(table.id, device_id)
+    console.log("FFFF")
+    console.log(pwm_powers)
+    for(let i = 0; i < count_of_cycles_in_device_moduls; i++){
+      addRowToMechDevice(
+        table.id,
+        device_id,
+        pwm_powers.split(',')[i],
+        work_mode,
+        cycle_begin.split(',')[i],
+        cycle_end.split(',')[i],
+        turn_on.split(',')[i],
+        turn_off.split(',')[i]
+      )
+    }
+
     add_row_button.onclick = function (event){
-      addRowToMechDevice(table.id, device_id)
+      // addRowToMechDevice(table.id, device_id)
     }
 
 
@@ -807,6 +920,6 @@
     }
   }
   // fill_time_input("time_values", "channel_time_values")
-
+create_config_window()
 </script>
 </html>
