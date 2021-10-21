@@ -104,12 +104,14 @@
         border-radius: 10px;
         color: #0000cc;
         position: absolute;
-        top: 0;
+        /*top: 0;*/
         right: 0;
-        bottom: 0;
+        /*bottom: 0;*/
         left: 0;
         margin: auto;
-        background: #fff;
+        background: #fff;,
+        position:absolute;
+        top:1px;
       }
     #change_device_mode_window {
         width: 900px;
@@ -219,14 +221,13 @@
             Незарегистрированные устройства
           </p>
           <button style="border: none; background-color: white">
-            <img src="refresh.png" style="width: 50px; height: 50px">
+            <img src="refresh.png" style="width: 50px; height: 50px" onclick="fetch_unregistered_devices()">
           </button>
         </div>
       </caption>
       <thead>
         <tr>
             <th>ID</th>
-            <th>Тип устройства</th>
             <th>Регистрация устройства</th>
         </tr>
       </thead>
@@ -243,7 +244,7 @@
             Зарегистрированные устройства
           </p>
           <button style="border: none; background-color: white">
-            <img src="refresh.png" style="width: 50px; height: 50px">
+            <img src="refresh.png" style="width: 50px; height: 50px" onclick="fetch_registered_devices()">
           </button>
         </div>
       </caption>
@@ -327,16 +328,9 @@
   </div>
     <div id="register_device_popup">
           <div id="register_device_window">
-            <h2 class="h1">Просмотр/Редактирование конфигурации</h2>
-            <br/>
-            <h2 id="device_id"></h2>
-            <br/>
             <div style="align-self: center">
-            <div style="display: flex; flex-direction: row;">
-              <label for="module_id" style="margin-left: 60px"> Имя устройства управления</label>
-              <input id="module_id" type="text" style="height: 20px; margin-left: 50px">
-            </div>
-            <form>
+
+            <form id="register_device_form">
 
               <br/>
             </form>
@@ -367,13 +361,19 @@
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
         // });
+        let tableRef = document.getElementById('unregistered_devices');
+        // tableRef.innerHTML = ''
+        let new_tbody = document.createElement('tbody');
+        // populate_with_new_rows(new_tbody);
+        let old_tbody = tableRef.lastElementChild
+        tableRef.replaceChild(new_tbody, old_tbody)
         let count_of_devices =  parseInt(response.headers.get('count_of_devices'), 10)
         let device_ids = response.headers.get('device_ids')
         let device_types = response.headers.get('device_types')
         device_ids = device_ids.split(',')
         device_types = device_types.split(',')
         for (let i = 0; i < count_of_devices; i++){
-          addRowToUnregisteredDevices(device_ids[i], device_types[i]);
+          addRowToUnregisteredDevices(new_tbody, device_ids[i]);
         }
     })
     .catch(function(err) {
@@ -386,14 +386,20 @@
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
         // });
-      console.log("get_registered_devices")
+        let tableRef = document.getElementById('registered_devices');
+        // tableRef.innerHTML = ''
+        let new_tbody = document.createElement('tbody');
+        // populate_with_new_rows(new_tbody);
+        let old_tbody = tableRef.lastElementChild
+        tableRef.replaceChild(new_tbody, old_tbody)
+        console.log("get_registered_devices")
         let count_of_devices =  parseInt(response.headers.get('count_of_devices'), 10)
         let device_ids = response.headers.get('device_ids')
         let device_names = response.headers.get('device_names')
         device_ids = device_ids.split(',')
         device_names = device_names.split(',')
         for (let i = 0; i < count_of_devices; i++){
-          addRowToRegisteredDevices(device_ids[i], device_names[i]);
+          addRowToRegisteredDevices(new_tbody, device_ids[i], device_names[i]);
         }
     })
     .catch(function(err) {
@@ -403,7 +409,7 @@
   fetch_registered_devices()
   fetch_unregistered_devices()
   function fetch_info_registered_device(device_id){
-   fetch("http://192.168.1.51/get_info_registered_device", {
+   fetch("http://192.168.1.51/get_info_registered_device?device_id=" + device_id, {
      method: 'GET' ,
      // mode: 'no-cors',
      // headers: {
@@ -426,20 +432,62 @@
         let sensor_values = response.headers.get('sensor_values').split(',')
         let count_of_device_modules = response.headers.get('count_of_device_modules').split(',')
         let count_of_cycles_in_device_moduls = response.headers.get('count_of_cycles_in_device_moduls').split(',')
+        let devices_names = response.headers.get('devices_names').split(',')
         let pwm_powers = response.headers.get('pwm_powers').split(';')
         let work_mode = response.headers.get('work_mode').split(',')
+        let status = response.headers.get('status').split(',')
+        let manual_value = response.headers.get('manual_value').split(',')
         let cycle_begin = response.headers.get('cycle_begin').split(';')
         let cycle_end = response.headers.get('cycle_end').split(';')
         let turn_on = response.headers.get('turn_on').split(';')
         let turn_off = response.headers.get('turn_off').split(';')
+        create_config_window(device_name, device_id)
+        let register_device_window_height = document.getElementById("register_device_window").style.height;
+        register_device_window_height=register_device_window_height.replace("px","");
+        register_device_window_height =+ register_device_window_height;
+
         for (let i = 0; i < count_of_sensor_modules; i++){
           console.log(sensor_values[i].split(' '))
           AddSensorDevice(i, sensors_names[i], sensor_indications[i],sensor_values[i])
+          let n = register_device_window_height
+          register_device_window_height = n + 50 + 'px';
         }
         for (let i = 0; i < count_of_device_modules; i++){
-          console.log(sensor_values[i].split(' '))
-          addMechDevice(i, count_of_cycles_in_device_moduls[i], pwm_powers[i], work_mode[i], cycle_begin[i], cycle_end[i], turn_on[i], turn_off[i])
+          console.log(count_of_cycles_in_device_moduls[i])
+          addMechDevice(
+            i,
+            device_name,
+            count_of_cycles_in_device_moduls[i],
+            pwm_powers[i],
+            work_mode[i],
+            status[i],
+            manual_value[i],
+            cycle_begin[i],
+            cycle_end[i],
+            turn_on[i],
+            turn_off[i]
+          )
+          let n = register_device_window_height
+          register_device_window_height = n + 50 + 'px';
         }
+        let register_device_window = document.getElementById("register_device_window")
+        let div3 = document.createElement("div")
+        div3.style = "display: flex; flex-direction: row; justify-content: center"
+        register_device_window.appendChild(div3)
+        let cancel_button = document.createElement("button")
+        cancel_button.classList.add("button")
+        cancel_button.addEventListener("click",go_back);
+        cancel_button.textContent = "Отменить"
+        div3.appendChild(cancel_button)
+        let save_button = document.createElement("button")
+        save_button.classList.add("button")
+        save_button.addEventListener("click",saveSettings);
+        save_button.textContent = "Сохранить"
+        // save_button.addEventListener('click', register_device)
+        div3.appendChild(save_button)
+        let new_lenght =  (count_of_sensor_modules + count_of_device_modules) * 75
+        let register_device_popup = document.getElementById("register_device_window")
+        register_device_popup.style = "height: " + new_lenght.toString() + "px"
         // device_names = device_names.split(',')
         // for (let i = 0; i < count_of_devices; i++){
         //   addRowToRegisteredDevices(device_ids[i], device_names[i]);
@@ -449,24 +497,21 @@
     //     console.info(err + " url: " + "http://192.168.1.51/get_info_registered_device");
     // });
   }
-  fetch_info_registered_device("123")
+
   let id = "123123"
   document.getElementById('id').innerHTML = 'Модуль: ' + id;
-  function addRowToUnregisteredDevices(device_id, device_type) { //добавление записи в таблицу
+  function addRowToUnregisteredDevices(table_body, device_id) { //добавление записи в таблицу
   // Get a reference to the table
   let tableRef = document.getElementById('unregistered_devices');
 
   // Insert a row in the table at row index 0
-  let newRow = tableRef.insertRow(1);
-
+  let newRow = table_body.insertRow(0);
   // Insert a cell in the row at index 0
   let newCell = newRow.insertCell(0);
-  let newCell1 = newRow.insertCell(1);
-  let newCell2 = newRow.insertCell(2);
+  let newCell2 = newRow.insertCell(1);
 
   // Append a text node to the cell
   let newText = document.createTextNode(device_id);
-  let newText1 = document.createTextNode(device_type);
   let button = document.createElement("button");
   button.innerHTML = "Зарегистрировать устройство";
   button.style.cssText = "      margin-top: 20px;\n" +
@@ -478,16 +523,15 @@
     "      margin-left: 40px;";
   button.addEventListener ("click", register_new_device);
   newCell.appendChild(newText);
-  newCell1.appendChild(newText1);
   newCell2.appendChild(button);
   }
 
-  function addRowToRegisteredDevices(device_id, device_name) { //добавление записи в таблицу
+  function addRowToRegisteredDevices(new_tbody, device_id, device_name) { //добавление записи в таблицу
   // Get a reference to the table
   let tableRef = document.getElementById('registered_devices');
 
   // Insert a row in the table at row index 0
-  let newRow = tableRef.insertRow(1);
+  let newRow = new_tbody.insertRow(0);
 
   // Insert a cell in the row at index 0
   let newCell = newRow.insertCell(0);
@@ -507,7 +551,6 @@
     "      width: 200px;\n" +
     "      height: 39px;\n" +
     "      margin-left: 0px;";
-  button.addEventListener ("click", register_new_device);
   let button1 = document.createElement("button");
   button1.innerHTML = "Удалить устройство";
   button1.style.cssText = "      margin-top: 20px;\n" +
@@ -518,6 +561,8 @@
     "      height: 39px;\n" +
     "      margin-left: 0px;";
   button.addEventListener ("click", register_new_device);
+  button1.addEventListener ("click", delete_device, false);
+  button1.device_id = device_id
   newCell.appendChild(newText);
   newCell1.appendChild(newText1);
   newCell2.appendChild(button);
@@ -525,9 +570,21 @@
 
   }
 
-  let device_id = 1
+  function delete_device(evt){
+    console.log(evt.currentTarget.device_id)
+     fetch("http://192.168.1.51/registered_device/delete" , {
+      method: 'POST' ,
+      body: evt.currentTarget.device_id
+   }
+   )
+  }
 
-  function create_change_device_mode_window(){
+  function create_change_device_mode_window(evt){
+    console.log("FFFFF")
+    let device_id = evt.currentTarget.device_id
+    let work_mode = evt.currentTarget.work_mode
+    let manual_value = evt.currentTarget.manual_value
+    let status = evt.currentTarget.status
     let change_device_mode_window = document.getElementById('change_device_mode_window');
     change_device_mode_window.innerHTML ='';
     window.location.href='#change_device_mode_popup'
@@ -607,35 +664,52 @@
     change_device_mode_window.appendChild(save_button)
     fill_pwd_input(param_input.id)
     change_device_mode_window.style.height = "400px"
+    if (work_mode === "manual"){
+      input1.checked = "checked"
+      param_input.value = manual_value
+      if (status === "on"){
+        input2.checked = "checked"
+
+      }
+    }
   }
   function register_new_device() {
      window.location.href='#register_device_popup'
-     document.getElementById('device_id').innerHTML = 'Устройство управления группой: ' + device_id;
+    fetch_info_registered_device("123")
+     // document.getElementById('device_id').innerHTML = 'Устройство управления группой: ' + device_id;
 
     // window.location=document.getElementById('button').href;
 
   }
-  function create_config_window(){
-    let device_list = [1]
+  function create_config_window(device_name, device_id){
     // AddSensorDevice(1)
     // addMechDevice(1)
     let register_device_window = document.getElementById("register_device_window")
-    let div3 = document.createElement("div")
-    div3.style = "display: flex; flex-direction: row; justify-content: center"
-    register_device_window.appendChild(div3)
-    let cancel_button = document.createElement("button")
-    cancel_button.classList.add("button")
-    cancel_button.addEventListener("click",go_back);
-    cancel_button.textContent = "Отменить"
-    div3.appendChild(cancel_button)
-    let save_button = document.createElement("button")
-    save_button.classList.add("button")
-    save_button.addEventListener("click",saveSettings);
-    save_button.textContent = "Сохранить"
-    div3.appendChild(save_button)
-    let new_lenght =  device_list.length * 800
-    let register_device_popup = document.getElementById("register_device_window")
-    register_device_popup.style = "height: " + new_lenght.toString() + "px"
+    register_device_window.innerHTML = ''
+    let header = document.createElement('h2')
+    header.textContent = "Просмотр/Редактирование конфигурации"
+    register_device_window.appendChild(header)
+    let header2 = document.createElement('h2')
+    header2.textContent = device_id
+    register_device_window.appendChild(header2)
+    let form = document.createElement('form')
+    form.id = "register_device_form"
+    register_device_window.appendChild(form)
+    let div1 = document.createElement("div")
+    div1.style = "display: flex; flex-direction: row;"
+    form.appendChild(div1)
+    let label = document.createElement("label")
+    label.for = "module_id"
+    label.style = "margin-left: 60px"
+    label.textContent = "Имя устройства управления"
+    div1.appendChild(label)
+    let input = document.createElement("input")
+    input.id = "module_id"
+    input.type = "text"
+    input.style = "height: 20px; margin-left: 50px"
+    input.value = device_name
+    div1.appendChild(input)
+
   }
   function go_back(){
     window.location.href='#'
@@ -645,7 +719,7 @@
   }
 
   function AddSensorDevice(device_id,device_name, indication, values){
-    let config_window = document.getElementById('register_device_window');
+    let config_window = document.getElementById('register_device_form');
     let div = document.createElement('div');
     let header = document.createElement('h2');
     header.textContent = device_name;
@@ -713,10 +787,50 @@
 
   }
   // AddSensorDevice(1)
-  function addMechDevice(i, count_of_cycles_in_device_moduls, pwm_powers, work_mode, cycle_begin, cycle_end, turn_on, turn_off){
-    let config_window = document.getElementById('register_device_window');
+  function addMechDevice(
+    device_id,
+    device_name,
+    count_of_cycles_in_device_moduls,
+    pwm_powers,
+    work_mode,
+    status,
+    manual_value,
+    cycle_begin,
+    cycle_end,
+    turn_on,
+    turn_off
+  ){
+    let config_window = document.getElementById('register_device_form');
     let header = document.createElement("h2");
-    header.textContent = "Имя модуля";
+    header.textContent = device_name;
+    let working_mode_div = document.createElement("div");
+    working_mode_div.style.display="flex"
+    working_mode_div.style.alignItems="center"
+    working_mode_div.style.flexDirection="column"
+    let working_mode_text = document.createTextNode(work_mode);
+    let working_mode_text_descr = document.createTextNode("Режим работы: ");
+    let sub_div = document.createElement("div");
+    sub_div.style="display: flex; flex-direction: row"
+    sub_div.appendChild(working_mode_text_descr)
+    sub_div.appendChild(working_mode_text)
+    let working_mode_button = document.createElement("button");
+    working_mode_button.innerHTML = "Изменить режим работы";
+    working_mode_button.style.cssText = "      margin-top: 20px;\n" +
+    "      background: #4C5DB8;\n" +
+    "      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);\n" +
+    "      border-radius: 15px;\n" +
+    "      width: 200px;\n" +
+    "      height: 39px;\n" +
+    "      margin-left: 0px;";
+    working_mode_button.addEventListener ("click", create_change_device_mode_window);
+    working_mode_button.device_id = device_id
+    working_mode_button.device_name = device_name
+    working_mode_button.status = status
+    working_mode_button.manual_value = manual_value
+    working_mode_button.work_mode = work_mode
+    working_mode_button.type ='button'
+    working_mode_div.appendChild(sub_div);
+    working_mode_div.appendChild(working_mode_button);
     let table = document.createElement("table");
     table.id = 'mech_device_table_' + device_id.toString()
     table.classList.add("styled-table");
@@ -753,10 +867,6 @@
     th1.style="width:200px"
     th1.textContent = "Степень ШИМ"
     tr.appendChild(th1);
-    let th2 = document.createElement("th")
-    th2.style="width:200px"
-    th2.textContent = "Режим работы"
-    tr.appendChild(th2);
     let th3 = document.createElement("th")
     th3.textContent = "Время начала цикла"
     tr.appendChild(th3);
@@ -775,45 +885,44 @@
     let tr2 = document.createElement("tr")
     tbody.appendChild(tr2)
     config_window.appendChild(header);
+    config_window.appendChild(working_mode_div);
     config_window.appendChild(table);
-    console.log("FFFF")
-    console.log(pwm_powers)
     for(let i = 0; i < count_of_cycles_in_device_moduls; i++){
+      console.log(table.id,)
       addRowToMechDevice(
         table.id,
         device_id,
         pwm_powers.split(',')[i],
-        work_mode,
         cycle_begin.split(',')[i],
         cycle_end.split(',')[i],
-        turn_on.split(',')[i],
-        turn_off.split(',')[i]
+        turn_on.split(',')[i].split(' '),
+        turn_off.split(',')[i].split(' ')
       )
     }
 
     add_row_button.onclick = function (event){
-      // addRowToMechDevice(table.id, device_id)
+      addRowToMechDevice(table.id, device_id, 0, "00:00", "00:00", "0 secs", "0 secs")
     }
 
 
 
   }
   // addMechDevice(1)
-  function addRowToMechDevice(device_table_id, device_id){
+  function addRowToMechDevice(device_table_id, device_id, pwm_powers, cycle_begin, cycle_end, turn_on, turn_off){
     let tableRef = document.getElementById(device_table_id);
     // Insert a row in the table at row index 0
     let newRow = tableRef.insertRow(1);
     let newCell = newRow.insertCell(0);
-    let newCell1 = newRow.insertCell(1);
-    let newCell2 = newRow.insertCell(2);
-    let newCell3 = newRow.insertCell(3);
+    let newCell2 = newRow.insertCell(1);
+    let newCell3 = newRow.insertCell(2);
     newCell3.style = "width: 100px"
-    let newCell4 = newRow.insertCell(4);
+    let newCell4 = newRow.insertCell(3);
     newCell4.style="width: 100px"
-    let newCell5 = newRow.insertCell(5);
+    let newCell5 = newRow.insertCell(4);
     newCell4.style="width: 100px"
     let pwd_select = document.createElement("select");
     pwd_select.id = 'pwd_input' + device_id.toString()
+    console.log(pwm_powers)
     let input1= document.createElement("input");
     let input2 = document.createElement("input");
     let select_time_on = document.createElement("select");
@@ -833,25 +942,7 @@
     select_time_type_on.style="width: 50px"
     select_time_off.style="width: 50px"
     select_time_type_off.style="width: 50px"
-    let working_mode_div = document.createElement("div");
-    working_mode_div.style.display="flex"
-    working_mode_div.style.alignItems="center"
-    working_mode_div.style.flexDirection="column"
-    let working_mode_text = document.createTextNode('Ручной');
-    let working_mode_button = document.createElement("button");
-    working_mode_button.innerHTML = "Изменить режим работы";
-    working_mode_button.style.cssText = "      margin-top: 20px;\n" +
-    "      background: #4C5DB8;\n" +
-    "      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);\n" +
-    "      border-radius: 15px;\n" +
-    "      width: 200px;\n" +
-    "      height: 39px;\n" +
-    "      margin-left: 0px;";
-    working_mode_button.addEventListener ("click", create_change_device_mode_window);
-    working_mode_div.appendChild(working_mode_text);
-    working_mode_div.appendChild(working_mode_button);
     newCell.appendChild(pwd_select)
-    newCell1.appendChild(working_mode_div)
     newCell2.appendChild(input1)
     newCell3.appendChild(input2)
     newCell4.appendChild(select_time_on)
@@ -863,12 +954,51 @@
     fill_time_input(select_time_off.id)
     fill_time_type_input(select_time_type_on.id)
     fill_time_type_input(select_time_type_off.id)
+    pwd_select.value = pwm_powers
+    input1.value = cycle_begin
+    input2.value = cycle_end
+    let time_type_on = ''
+    console.log(turn_off)
+    if (turn_on[1] === 'secs'){time_type_on = 'секунды'}
+    if (turn_on[1] === 'mins'){time_type_on = 'минуты'}
+    if (turn_on[1] === 'hours'){time_type_on = 'часы'}
+    select_time_on.value = turn_on[0]
+    select_time_type_on.value = time_type_on
+    let time_type_off = ''
+    if (turn_off[1] === 'secs'){time_type_off = 'секунды'}
+    if (turn_off[1] === 'mins'){time_type_off = 'минуты'}
+    if (turn_off[1] === 'hours'){time_type_off = 'часы'}
+    console.log(time_type_off)
+    select_time_off.value = turn_off[0]
+    select_time_type_off.value = time_type_off
     let register_device_window_height = document.getElementById("register_device_window").style.height;
     register_device_window_height=register_device_window_height.replace("px","");
     register_device_window_height =+ register_device_window_height;
     let n = register_device_window_height
     register_device_window_height = n + 50 + 'px';
     document.getElementById("register_device_window").style.height = register_device_window_height
+  }
+  function register_device(){
+    let form_elems = document.getElementById("register_device_form").elements
+    const formData = new FormData(document.getElementById("register_device_form"))
+    console.log(formData.entries())
+    console.log(form_elems.length)
+    let arr = []
+    let data = {}
+    let query_string = ''
+    let prev_index = 0
+    for (let i = 0; i <= form_elems.length; i++){
+      if (form_elems[i]) {
+        if (i === 0) {
+          query_string += "?" + form_elems[i].id + "=" + form_elems[i].value
+        } else {
+          query_string += "&" + form_elems[i].id + "=" + form_elems[i].value
+        }
+      }
+
+    }
+    console.log(query_string)
+
   }
   // addRowToMechDevice('mech_device_table_1', 1)
   function showCurrentTime(value){ //установка текущего времени
@@ -920,6 +1050,6 @@
     }
   }
   // fill_time_input("time_values", "channel_time_values")
-create_config_window()
+
 </script>
 </html>
