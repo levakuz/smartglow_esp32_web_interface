@@ -356,7 +356,7 @@
 <script>
 
   function fetch_unregistered_devices(){
-   fetch("http://192.168.1.51/get_unregistered_devices", { method: 'GET' })
+   fetch("http://192.168.8.158/get_unregistered_devices", { method: 'GET' })
     .then(response => {
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
@@ -381,7 +381,7 @@
     });
   }
   function fetch_registered_devices(){
-   fetch("http://192.168.1.51/get_registered_devices", { method: 'GET' })
+   fetch("http://192.168.8.158/get_registered_devices", { method: 'GET' })
     .then(response => {
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
@@ -409,7 +409,7 @@
   fetch_registered_devices()
   fetch_unregistered_devices()
   function fetch_info_registered_device(device_id){
-   fetch("http://192.168.1.51/get_info_registered_device?device_id=" + device_id, {
+   fetch("http://192.168.8.158/get_info_registered_device?device_id=" + device_id, {
      method: 'GET' ,
      // mode: 'no-cors',
      // headers: {
@@ -433,6 +433,7 @@
         let count_of_device_modules = response.headers.get('count_of_device_modules').split(',')
         let count_of_cycles_in_device_moduls = response.headers.get('count_of_cycles_in_device_moduls').split(',')
         let devices_names = response.headers.get('devices_names').split(',')
+        let mech_devices_ids = response.headers.get('mech_devices_ids').split(',')
         let pwm_powers = response.headers.get('pwm_powers').split(';')
         let work_mode = response.headers.get('work_mode').split(',')
         let status = response.headers.get('status').split(',')
@@ -455,7 +456,7 @@
         for (let i = 0; i < count_of_device_modules; i++){
           console.log(count_of_cycles_in_device_moduls[i])
           addMechDevice(
-            i,
+            mech_devices_ids[i],
             device_name,
             count_of_cycles_in_device_moduls[i],
             pwm_powers[i],
@@ -481,8 +482,9 @@
         div3.appendChild(cancel_button)
         let save_button = document.createElement("button")
         save_button.classList.add("button")
-        save_button.addEventListener("click",saveSettings);
+        save_button.addEventListener("click",register_device);
         save_button.textContent = "Сохранить"
+        save_button.device_id = device_id
         // save_button.addEventListener('click', register_device)
         div3.appendChild(save_button)
         let new_lenght =  (count_of_sensor_modules + count_of_device_modules) * 75
@@ -494,7 +496,7 @@
         // }
     })
     // .catch(function(err) {
-    //     console.info(err + " url: " + "http://192.168.1.51/get_info_registered_device");
+    //     console.info(err + " url: " + "http://192.168.8.158/get_info_registered_device");
     // });
   }
 
@@ -572,7 +574,7 @@
 
   function delete_device(evt){
     console.log(evt.currentTarget.device_id)
-     fetch("http://192.168.1.51/registered_device/delete" , {
+     fetch("http://192.168.8.158/registered_device/delete" , {
       method: 'POST' ,
       body: evt.currentTarget.device_id
    }
@@ -580,7 +582,6 @@
   }
 
   function create_change_device_mode_window(evt){
-    console.log("FFFFF")
     let device_id = evt.currentTarget.device_id
     let work_mode = evt.currentTarget.work_mode
     let manual_value = evt.currentTarget.manual_value
@@ -588,19 +589,22 @@
     let change_device_mode_window = document.getElementById('change_device_mode_window');
     change_device_mode_window.innerHTML ='';
     window.location.href='#change_device_mode_popup'
+    let form = document.createElement('form')
+    form.id = "change_device_mode_form"
+    change_device_mode_window.appendChild(form)
     let header = document.createElement("h2")
     header.classList.add("h1")
-    change_device_mode_window.appendChild(header)
+    form.appendChild(header)
     header.textContent = "Изменение режима работы устройства"
     let header2 = document.createElement("h2")
     header2.classList.add("h2")
-    change_device_mode_window.appendChild(header2)
+    form.appendChild(header2)
     header2.textContent = "Имя модуля"
     let table = document.createElement("table");
     table.id = 'sensor_device_table_' + device_id.toString()
     table.classList.add("styled-table");
     table.style = "margin-left: 50px; margin-top: 0px"
-    change_device_mode_window.appendChild(table);
+    form.appendChild(table);
     let thead = document.createElement("thead");
     table.appendChild(thead);
     let tr = document.createElement("tr")
@@ -630,12 +634,13 @@
     div1.appendChild(switch_label)
     let input1 = document.createElement("input")
     input1.type = "checkbox"
+    input1.id = "manual_mode_switch"
     switch_label.appendChild(input1)
     let span = document.createElement("span")
     span.classList.add("slider_round")
     switch_label.appendChild(span)
     let br = document.createElement("br")
-    change_device_mode_window.appendChild(br)
+    form.appendChild(br)
     let div2 = document.createElement("div")
     newCell1.appendChild(div2)
     let switch_label2 = document.createElement("label")
@@ -643,6 +648,7 @@
     div2.appendChild(switch_label2)
     let input2 = document.createElement("input")
     input2.type = "checkbox"
+    input2.id = "turn_on_switch"
     switch_label2.appendChild(input2)
     let span2 = document.createElement("span")
     span2.classList.add("slider_round")
@@ -656,12 +662,15 @@
     cancel_button.classList.add("button")
     cancel_button.addEventListener("click",go_back_to_config_window);
     cancel_button.textContent = "Отменить"
-    change_device_mode_window.appendChild(cancel_button)
+    cancel_button.type = "button"
+    form.appendChild(cancel_button)
     let save_button = document.createElement("button")
     save_button.classList.add("button")
     save_button.addEventListener("click",saveDeviceMode);
     save_button.textContent = "Сохранить"
-    change_device_mode_window.appendChild(save_button)
+    save_button.type = "button"
+    save_button.device_id = device_id
+    form.appendChild(save_button)
     fill_pwd_input(param_input.id)
     change_device_mode_window.style.height = "400px"
     if (work_mode === "manual"){
@@ -699,12 +708,12 @@
     div1.style = "display: flex; flex-direction: row;"
     form.appendChild(div1)
     let label = document.createElement("label")
-    label.for = "module_id"
+    label.for = "device_name"
     label.style = "margin-left: 60px"
     label.textContent = "Имя устройства управления"
     div1.appendChild(label)
     let input = document.createElement("input")
-    input.id = "module_id"
+    input.id = "device_name"
     input.type = "text"
     input.style = "height: 20px; margin-left: 50px"
     input.value = device_name
@@ -936,8 +945,10 @@
     pwd_select.style="width: 50px"
     input1.style="width: 100px"
     input1.type="time"
+    input1.id="cycle_begin" + device_id.toString()
     input2.style="width: 100px"
     input2.type="time"
+    input2.id="cycle_end" + device_id.toString()
     select_time_on.style="width: 50px"
     select_time_type_on.style="width: 50px"
     select_time_off.style="width: 50px"
@@ -978,7 +989,8 @@
     register_device_window_height = n + 50 + 'px';
     document.getElementById("register_device_window").style.height = register_device_window_height
   }
-  function register_device(){
+  function register_device(evt){
+    let device_id  = evt.currentTarget.device_id
     let form_elems = document.getElementById("register_device_form").elements
     const formData = new FormData(document.getElementById("register_device_form"))
     console.log(formData.entries())
@@ -986,19 +998,121 @@
     let arr = []
     let data = {}
     let query_string = ''
-    let prev_index = 0
+    let sensor_id = ''
+    let mech_device_id = ''
+    let count_of_sensor_modules = 0
+    let sensors_ids = ''
+    let sensors_values = ''
+    let channel_time_value = ''
+    let mech_devices_ids = ''
+    let mech_devices_count = 0
+    let pwm_powers = ''
+    let cycle_begins =''
+    let cycle_ends =''
+    let turn_on =''
+    let turn_ons =''
+    let turn_off =''
+    let turn_offs =''
     for (let i = 0; i <= form_elems.length; i++){
       if (form_elems[i]) {
-        if (i === 0) {
-          query_string += "?" + form_elems[i].id + "=" + form_elems[i].value
-        } else {
-          query_string += "&" + form_elems[i].id + "=" + form_elems[i].value
+        console.log(form_elems[i])
+        console.log(form_elems[i].value)
+        if (form_elems[i] === "device_name"){
+          data[form_elems[i].id] = form_elems[i].value
+        }
+        if (form_elems[i].id.includes('channel_time_value')){
+          sensor_id = form_elems[i].id.replace('channel_time_value','')
+          if(sensors_ids === ''){
+            sensors_ids += sensor_id
+          }
+          else{
+            sensors_ids += ',' + sensor_id
+          }
+
+          count_of_sensor_modules += 1
+          channel_time_value = form_elems[i].value
+        }
+        if (form_elems[i].id.includes('channel_time' + sensor_id)){
+          let channel_time = form_elems[i].value
+          if (channel_time === 'минуты'){channel_time_value = parseInt(channel_time_value,10)*60}
+          if (channel_time === 'часы'){channel_time_value = parseInt(channel_time_value,10)*3600}
+          if (sensors_values === ''){ sensors_values += channel_time_value}
+          else{sensors_values += ',' + channel_time_value}
+        }
+        if (form_elems[i].id.includes('pwd_input')){
+          if (mech_device_id !== form_elems[i].id.replace('pwd_input','') && mech_devices_ids !== ''){
+            pwm_powers += ';'
+            cycle_begins += ';'
+            cycle_ends += ';'
+            turn_on += ';'
+            turn_off += ';'
+          }
+          mech_device_id = form_elems[i].id.replace('pwd_input','')
+          if(mech_devices_ids === ''){mech_devices_ids += mech_device_id}
+          else if (!mech_devices_ids.includes(mech_device_id)){mech_devices_ids += ',' + mech_device_id}
+          if (pwm_powers === '' || pwm_powers.slice(-1) === ';') {
+            pwm_powers += form_elems[i].value
+            mech_devices_count +=1}
+          else{pwm_powers += ',' + form_elems[i].value}
+
+        }
+        if(form_elems[i].id.includes('cycle_begin')){
+          console.log(form_elems[i].value)
+          if (cycle_begins === '' || cycle_begins.slice(-1) === ';') {cycle_begins += form_elems[i].value}
+          else{cycle_begins += ',' + form_elems[i].value}
+        }
+        if(form_elems[i].id.includes('cycle_end')){
+          console.log(form_elems[i].value)
+          if (cycle_ends === '' || cycle_ends.slice(-1) === ';') {cycle_ends += form_elems[i].value}
+          else{cycle_ends += ',' + form_elems[i].value}
+        }
+        if(form_elems[i].id.includes('time_select_on')){
+          turn_on = form_elems[i].value
+        }
+        if (form_elems[i].id.includes('time_type_select_on_' + mech_device_id)){
+          let time_type_select_on = form_elems[i].value
+          if (time_type_select_on === 'минуты'){turn_on = parseInt(turn_on,10)*60}
+          if (time_type_select_on === 'часы'){turn_on = parseInt(turn_on,10)*3600}
+          if (turn_ons === ''){ turn_ons += turn_on}
+          else{turn_ons += ',' + turn_on}
+        }
+        if(form_elems[i].id.includes('time_select')){
+          turn_off = form_elems[i].value
+        }
+        if (form_elems[i].id.includes('time_type_select' + mech_device_id)){
+          let time_type_select_on = form_elems[i].value
+          if (time_type_select_on === 'минуты'){turn_off = parseInt(turn_off,10)*60}
+          if (time_type_select_on === 'часы'){turn_off = parseInt(turn_off,10)*3600}
+          if (turn_offs === ''){ turn_offs += turn_off}
+          else{turn_offs += ',' + turn_off}
         }
       }
-
     }
+    console.log(sensors_values)
+    console.log(pwm_powers)
     console.log(query_string)
-
+    console.log(mech_devices_ids)
+    console.log(cycle_begins)
+    console.log(cycle_ends)
+    console.log(turn_ons)
+    console.log(count_of_sensor_modules)
+    console.log(turn_offs)
+    data["device_id"] = device_id
+    data["count_of_sensor_modules"] = count_of_sensor_modules
+    data["sensors_ids"] = sensors_ids
+    data["sensors_values"] = sensors_values
+    data["mech_devices_ids"] = mech_devices_ids
+    data["pwm_powers"] = pwm_powers
+    data["cycle_begin"] = cycle_begins
+    data["cycle_end"] = cycle_ends
+    data["turn_on"] = turn_ons
+    data["turn_off"] = turn_offs
+    console.log(data)
+    const params = new URLSearchParams(data)
+    console.log(params.toString())
+    console.log(mech_devices_count)
+    // go_back()
+    fetch("http://192.168.8.158/registered_device/add?" + params.toString(), { method: 'GET' })
   }
   // addRowToMechDevice('mech_device_table_1', 1)
   function showCurrentTime(value){ //установка текущего времени
@@ -1010,8 +1124,42 @@
   function saveSettings(){
     go_back()
   }
-  function saveDeviceMode(){
-    go_back_to_config_window()
+  function saveDeviceMode(evt){
+    let device_id  = evt.currentTarget.device_id
+    let form_elems = document.getElementById("change_device_mode_form").elements
+    const formData = new FormData(document.getElementById("change_device_mode_form"))
+    console.log(device_id)
+    console.log(formData.entries())
+    console.log(form_elems.length)
+
+    let data = {}
+    data["device_id"] = device_id
+    for (let i = 0; i <= form_elems.length; i++){
+      if (form_elems[i]){
+        console.log(form_elems[i])
+        console.log()
+        if (form_elems[i].id === "manual_mode_switch"){
+          if (form_elems[i].checked === true) {data["work_mode"] = "manual"}
+          else{data["work_mode"] = "auto"}
+
+        }
+        else if (form_elems[i].id === "turn_on_switch"){
+          if (form_elems[i].checked === true) {data["status"] = "on"}
+          else {data["status"] = "off"}
+        }
+        else if (form_elems[i].id === "param_input"){
+          data["manual_value"] = form_elems[i].value
+        }
+
+      }
+
+    }
+    console.log(data)
+    // go_back_to_config_window()
+    const params = new URLSearchParams(data)
+    console.log(params.toString())
+    // go_back()
+    fetch("http://192.168.8.158/change_device_mode?" + params.toString(), { method: 'GET' })
   }
   function fill_time_input(input_id )
   {
