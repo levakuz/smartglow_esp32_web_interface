@@ -41,7 +41,7 @@
   async function send_login_request(){
     let input_value = document.getElementById('serial_number_input').value
     console.log(input_value)
-    let response = await fetch('http://192.168.1.51/login', {
+    let response = await fetch('http://localhost/login', {
     method: 'POST',
     body: input_value
 
