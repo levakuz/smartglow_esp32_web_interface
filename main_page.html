@@ -221,7 +221,7 @@
             Незарегистрированные устройства
           </p>
           <button style="border: none; background-color: white">
-            <img src="refresh.png" style="width: 50px; height: 50px" onclick="fetch_unregistered_devices()">
+            <img src="refresh" style="width: 50px; height: 50px" onclick="fetch_unregistered_devices()">
           </button>
         </div>
       </caption>
@@ -244,7 +244,7 @@
             Зарегистрированные устройства
           </p>
           <button style="border: none; background-color: white">
-            <img src="refresh.png" style="width: 50px; height: 50px" onclick="fetch_registered_devices()">
+            <img src="refresh" style="width: 50px; height: 50px" onclick="fetch_registered_devices()">
           </button>
         </div>
       </caption>
@@ -268,8 +268,8 @@
   <div>
     <div style="display: flex; flex-direction: row;">
       <h2 class="h1">Системное время: </h2>
-      <input style="margin-left: 10px; height: 30px; align-self: center" type="datetime-local" name="calendar">
-      <input class="button" type="submit" value="Применить">
+      <input style="margin-left: 10px; height: 30px; align-self: center" type="datetime-local" name="calendar" id="system_datetime">
+      <input class="button" type="submit" value="Применить" onclick="set_system_time()">
     </div>
       <div style="display: flex; flex-direction: row;">
         <h2 class="h1">Сетевые настройки</h2>
@@ -319,11 +319,11 @@
             </form>
             <div style="display: flex; flex-direction: row;">
               <button class="button" onclick="window.location.href='#'">Отменить</button>
-              <button class="button" onclick="saveSettings();window.location.href='#'">Сохранить</button>
+              <button class="button" onclick="save_system_settings()">Сохранить</button>
             </div>
           </div>
         </div>
-        <button class="button" onclick="window.location.href='#zatemnenie'">Изменить</button>
+        <button class="button" onclick="get_system_settings();window.location.href='#zatemnenie'">Изменить</button>
       </div>
   </div>
     <div id="register_device_popup">
@@ -356,7 +356,7 @@
 <script>
 
   function fetch_unregistered_devices(){
-   fetch("http://localhost/devices/unregistered/get", { method: 'GET' })
+   fetch("http://" + location.hostname + "/devices/unregistered/get", { method: 'GET'})
     .then(response => {
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
@@ -369,19 +369,17 @@
         tableRef.replaceChild(new_tbody, old_tbody)
         let count_of_devices =  parseInt(response.headers.get('count_of_devices'), 10)
         let device_ids = response.headers.get('device_ids')
-        let device_types = response.headers.get('device_types')
         device_ids = device_ids.split(',')
-        device_types = device_types.split(',')
         for (let i = 0; i < count_of_devices; i++){
           addRowToUnregisteredDevices(new_tbody, device_ids[i]);
         }
     })
     .catch(function(err) {
-        console.info(err + " url: " + "http://localhost/devices/unregistered/get");
+        console.info(err + " url: " + "http://" + location.hostname + "/devices/unregistered/get");
     });
   }
   function fetch_registered_devices(){
-   fetch("http://localhost/devices/registered/get", { method: 'GET' })
+   fetch("http://" + location.hostname + "/devices/registered/get", { method: 'GET'  })
     .then(response => {
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
@@ -403,14 +401,15 @@
         }
     })
     .catch(function(err) {
-        console.info(err + " url: " + "http://localhost/devices/registered/get");
+        console.info(err + " url: " + "http://" + location.hostname +"/devices/registered/get");
     });
   }
   fetch_registered_devices()
   fetch_unregistered_devices()
   function fetch_info_registered_device(device_id){
-   fetch("http://localhost/registered_device/get?device_id=" + device_id, {
+   fetch("http://" + location.hostname + "/registered_device/get?device_id=" + device_id, {
      method: 'GET' ,
+     mode: "no-cors"
      // mode: 'no-cors',
      // headers: {
      //  'Access-Control-Allow-Origin': '*',
@@ -428,6 +427,7 @@
         let device_name = response.headers.get('device_name')
         let count_of_sensor_modules = response.headers.get('count_of_sensor_modules')
         let sensors_names = response.headers.get('sensors_names').split(',')
+        let sensors_ids = response.headers.get('sensors_ids').split(',')
         let sensor_indications = response.headers.get('sensor_indications').split(',')
         let sensor_values = response.headers.get('sensor_values').split(',')
         let count_of_device_modules = response.headers.get('count_of_device_modules').split(',')
@@ -449,7 +449,7 @@
 
         for (let i = 0; i < count_of_sensor_modules; i++){
           console.log(sensor_values[i].split(' '))
-          AddSensorDevice(i, sensors_names[i], sensor_indications[i],sensor_values[i])
+          AddSensorDevice(sensors_ids[i], sensors_names[i], sensor_indications[i],sensor_values[i])
           let n = register_device_window_height
           register_device_window_height = n + 50 + 'px';
         }
@@ -496,7 +496,7 @@
         // }
     })
     // .catch(function(err) {
-    //     console.info(err + " url: " + "http://localhost/devices/registered/get");
+    //     console.info(err + " url: " + "http://" + location.hostname + "/devices/registered/get");
     // });
   }
 
@@ -524,6 +524,7 @@
     "      height: 39px;\n" +
     "      margin-left: 40px;";
   button.addEventListener ("click", register_new_device);
+  button.device_id = device_id
   newCell.appendChild(newText);
   newCell2.appendChild(button);
   }
@@ -565,6 +566,7 @@
   button.addEventListener ("click", register_new_device);
   button1.addEventListener ("click", delete_device, false);
   button1.device_id = device_id
+  button.device_id = device_id
   newCell.appendChild(newText);
   newCell1.appendChild(newText1);
   newCell2.appendChild(button);
@@ -574,8 +576,9 @@
 
   function delete_device(evt){
     console.log(evt.currentTarget.device_id)
-     fetch("http://localhost/registered_device/delete" , {
+     fetch("http://" + location.hostname + "/registered_device/delete" , {
       method: 'POST' ,
+      mode: "no-cors",
       body: evt.currentTarget.device_id
    }
    )
@@ -682,9 +685,11 @@
       }
     }
   }
-  function register_new_device() {
+  function register_new_device(evt) {
      window.location.href='#register_device_popup'
-    fetch_info_registered_device("123")
+      let device_id  = evt.currentTarget.device_id
+
+    fetch_info_registered_device(device_id)
      // document.getElementById('device_id').innerHTML = 'Устройство управления группой: ' + device_id;
 
     // window.location=document.getElementById('button').href;
@@ -699,7 +704,7 @@
     header.textContent = "Просмотр/Редактирование конфигурации"
     register_device_window.appendChild(header)
     let header2 = document.createElement('h2')
-    header2.textContent = device_id
+    header2.textContent = "ID: " + device_id
     register_device_window.appendChild(header2)
     let form = document.createElement('form')
     form.id = "register_device_form"
@@ -738,6 +743,22 @@
     table.classList.add("styled-table");
     table.style = "margin-left: 50px; margin-top: 0px"
     config_window.appendChild(table);
+    let caption = document.createElement("caption");
+    caption.style = "align-self: center";
+    let caption_div = document.createElement("div");
+    caption_div.style = "display: flex; flex-direction:row; justify-content: center";
+    caption.appendChild(caption_div)
+    table.appendChild(caption)
+    let refresh_button = document.createElement("button");
+    refresh_button.style = "border: none; background-color: white; margin-left: 200px"
+    refresh_button.type = "button"
+    refresh_button.sensor_id = device_id
+    refresh_button.addEventListener("click",refresh_sensor)
+    caption_div.appendChild(refresh_button);
+    let refresh_img = document.createElement("img");
+    refresh_img.src = "refresh"
+    refresh_img.style = "width: 50px; height: 50px"
+    refresh_button.appendChild(refresh_img);
     let thead = document.createElement("thead");
     table.appendChild(thead);
     let tr = document.createElement("tr")
@@ -765,9 +786,10 @@
     input.type = "text";
     input.list = "time_values" + device_id.toString();
     // console.log(input.list.id)
-    let newText1 = document.createTextNode(indication);
-    newCell.appendChild(newText1)
-    values = values.split(' ')
+    let p = document.createElement("p");
+    p.textContent = indication
+    p.id = "sensor_indications_" + device_id
+    newCell.appendChild(p)
     input.style = "width: 75px; margin-right: 10px";
     let datalist = document.createElement("datalist");
     datalist.id = "time_values" + device_id.toString();
@@ -777,11 +799,15 @@
     input_time_measure_datalist.id = "channel_time" + device_id.toString();
     input_time_measure_datalist.style = "width: 100px";
     let time_type;
-    if (values[1] === 'secs'){time_type = 'секунды'}
-    if (values[1] === 'mins'){time_type = 'минуты'}
-    if (values[1] === 'hours'){time_type = 'часы'}
-    console.log(time_type)
-    console.log(values[0])
+    if (values % 3600 === 0){
+      time_type = 'часы'
+      values = values /3600
+    }
+    else if (values % 60 === 0){
+      time_type = 'минуты'
+      values = values / 60
+    }
+    else{time_type = 'часы'}
     newCell1.appendChild(div);
     div.appendChild(label);
     div.appendChild(input);
@@ -792,7 +818,7 @@
     fill_time_input(input.id)
     fill_time_type_input(input_time_measure_datalist.id)
     input_time_measure_datalist.value = time_type
-    input.value = values[0]
+    input.value = values
 
   }
   // AddSensorDevice(1)
@@ -855,17 +881,19 @@
     caption_text.style = "font-size: 18px;"
     caption_div.appendChild(caption_text);
     let add_row_button = document.createElement("button");
-    add_row_button.style = "border: none; background-color: white; margin-left: 10px; margin-right: 400px"
+    add_row_button.style = "border: none; background-color: white; margin-left: 10px; margin-right: 350px"
+    add_row_button.type = "button"
     caption_div.appendChild(add_row_button);
     let add_row_img = document.createElement("img");
-    add_row_img.src = "plus-icon.png"
+    add_row_img.src = "plus_icon"
     add_row_img.style = "width: 30px; height: 30px"
     add_row_button.appendChild(add_row_img);
     let refresh_button = document.createElement("button");
     refresh_button.style = "border: none; background-color: white; margin-left: 200px"
+    refresh_button.type = "button"
     caption_div.appendChild(refresh_button);
     let refresh_img = document.createElement("img");
-    refresh_img.src = "refresh.png"
+    refresh_img.src = "refresh"
     refresh_img.style = "width: 50px; height: 50px"
     refresh_button.appendChild(refresh_img);
     let thead = document.createElement("thead");
@@ -904,13 +932,13 @@
         pwm_powers.split(',')[i],
         cycle_begin.split(',')[i],
         cycle_end.split(',')[i],
-        turn_on.split(',')[i].split(' '),
-        turn_off.split(',')[i].split(' ')
+        turn_on.split(',')[i],
+        turn_off.split(',')[i]
       )
     }
 
     add_row_button.onclick = function (event){
-      addRowToMechDevice(table.id, device_id, 0, "00:00", "00:00", "0 secs", "0 secs")
+      addRowToMechDevice(table.id, device_id, 0, "00:00", "00:00", "0", "0")
     }
 
 
@@ -970,17 +998,28 @@
     input2.value = cycle_end
     let time_type_on = ''
     console.log(turn_off)
-    if (turn_on[1] === 'secs'){time_type_on = 'секунды'}
-    if (turn_on[1] === 'mins'){time_type_on = 'минуты'}
-    if (turn_on[1] === 'hours'){time_type_on = 'часы'}
-    select_time_on.value = turn_on[0]
+    if (turn_on % 3600 === 0){
+      time_type_on = 'часы'
+      turn_on = turn_on /3600
+    }
+    else if (turn_on % 60 === 0){
+      time_type_on = 'минуты'
+      turn_on = turn_on / 60
+    }
+    else{time_type_on = 'секунды'}
+    select_time_on.value = turn_on
     select_time_type_on.value = time_type_on
     let time_type_off = ''
-    if (turn_off[1] === 'secs'){time_type_off = 'секунды'}
-    if (turn_off[1] === 'mins'){time_type_off = 'минуты'}
-    if (turn_off[1] === 'hours'){time_type_off = 'часы'}
-    console.log(time_type_off)
-    select_time_off.value = turn_off[0]
+        if (turn_off % 3600 === 0){
+      time_type_off = 'часы'
+      turn_off = turn_off /3600
+    }
+    else if (turn_off % 60 === 0){
+      time_type_off = 'минуты'
+      turn_off = turn_off / 60
+    }
+    else{time_type_off = 'секунды'}
+    select_time_off.value = turn_off
     select_time_type_off.value = time_type_off
     let register_device_window_height = document.getElementById("register_device_window").style.height;
     register_device_window_height=register_device_window_height.replace("px","");
@@ -1111,8 +1150,8 @@
     const params = new URLSearchParams(data)
     console.log(params.toString())
     console.log(mech_devices_count)
-    // go_back()
-    fetch("http://localhost/registered_device/add?" + params.toString(), { method: 'GET' })
+    go_back()
+    fetch("http://" + location.hostname + "/registered_device/add?" + params.toString(), { method: 'GET'  })
   }
   // addRowToMechDevice('mech_device_table_1', 1)
   function showCurrentTime(value){ //установка текущего времени
@@ -1121,8 +1160,28 @@
   }
 
   showCurrentTime('2017-06-01T21:30');
-  function saveSettings(){
+  function save_system_settings(){
+    let form_elems = document.getElementById("system_settings_form").elements
+    let data = {}
+    let system_time_value
+    for (let i = 0; i <= form_elems.length; i++){
+      if (form_elems[i]){
+        if (form_elems[i].id === "system_time_value"){
+          system_time_value = form_elems[i].value
+        }
+        else if (form_elems[i].id === "system_time_options"){
+          if (form_elems[i].value === 'минуты'){system_time_value = parseInt(system_time_value,10)*60}
+          if (form_elems[i].value === 'часы'){system_time_value = parseInt(system_time_value,10)*3600}
+          data["sending_frequency"] = system_time_value
+        }
+        else {data[form_elems[i].id] = form_elems[i].value}
+      }
+    }
+    const params = new URLSearchParams(data)
+    console.log(params.toString())
+    console.log(data)
     go_back()
+    fetch("http://"+ location.hostname + "/system_settings/edit?" + params.toString(), { method: 'GET'  })
   }
   function saveDeviceMode(evt){
     let device_id  = evt.currentTarget.device_id
@@ -1155,11 +1214,74 @@
 
     }
     console.log(data)
-    // go_back_to_config_window()
+    go_back_to_config_window()
     const params = new URLSearchParams(data)
     console.log(params.toString())
     // go_back()
-    fetch("http://localhost/change_device_mode?" + params.toString(), { method: 'GET' })
+    fetch("http://"+ location.hostname + "/change_device_mode?" + params.toString(), { method: 'GET'  })
+  }
+  function get_system_settings() {
+    fetch("http://" + location.hostname + "/system_settings/get", {
+        method: 'GET' ,
+        mode: "no-cors"
+      }
+    )
+    .then(response => {
+        // response.headers.forEach(function(value, name) {
+        //     console.log(name + ": " + value);
+        // });
+        let count_of_devices =  parseInt(response.headers.get('count_of_devices'), 10)
+        let wifi_name = response.headers.get('wifi_name')
+        let wifi_pass = response.headers.get('wifi_pass')
+        let broker_ip = response.headers.get('broker_ip')
+        let broker_port = response.headers.get('broker_port')
+        let broker_username = response.headers.get('broker_username')
+        let broker_pass = response.headers.get('broker_pass')
+        let sending_frequency = response.headers.get('sending_frequency')
+        document.getElementById("wifi_name").value = wifi_name
+        document.getElementById("wifi_pass").value = wifi_pass
+        document.getElementById("broker_ip").value = broker_ip
+        document.getElementById("broker_port").value = broker_port
+        document.getElementById("broker_username").value = broker_username
+        document.getElementById("broker_pass").value = broker_pass
+
+        if (sending_frequency % 3600 === 0){
+          document.getElementById("system_time_options").value = "часы"
+          sending_frequency = sending_frequency /3600
+        }
+        else if (sending_frequency % 60 === 0){
+          document.getElementById("system_time_options").value = "минуты"
+          sending_frequency = sending_frequency /60
+        }
+        else {document.getElementById("system_time_options").value = "секунды"}
+        document.getElementById("system_time_value").value = sending_frequency
+      }
+    )
+  }
+  function get_system_time() {
+    fetch("http://"+ location.hostname + "/system_time/get", { method: 'GET'  })
+        .then(response => {
+            document.getElementById("system_datetime").value = response.headers.get('system_datetime')
+          }
+        )
+  }
+  function set_system_time() {
+    let data = {}
+    data["system_datetime"] = document.getElementById("system_datetime").value
+    const params = new URLSearchParams(data)
+    console.log(document.getElementById("system_datetime").value)
+    fetch("http://" + location.hostname + "/system_time/edit?" + params.toString(), { method: 'GET'  })
+  }
+  function refresh_sensor(evt) {
+    let sensor_id  = evt.currentTarget.sensor_id
+    let data = {}
+    data["sensor_id"] = sensor_id
+    const params = new URLSearchParams(data)
+    fetch("http://" + location.hostname + "/sensor_device/get?" + params.toString(), { method: 'GET',mode: "no-cors" })
+      .then(response => {
+            document.getElementById("sensor_indications_" + sensor_id).textContent = response.headers.get('sensor_indications')
+        }
+      )
   }
   function fill_time_input(input_id )
   {
@@ -1197,6 +1319,7 @@
       // register_devices.appendChild(option1);
     }
   }
+  get_system_time()
   // fill_time_input("time_values", "channel_time_values")
 
 </script>
