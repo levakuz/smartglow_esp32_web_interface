@@ -356,7 +356,7 @@
 <script>
 
   function fetch_unregistered_devices(){
-   fetch("http://192.168.8.158/get_unregistered_devices", { method: 'GET' })
+   fetch("http://localhost/get_unregistered_devices", { method: 'GET' })
     .then(response => {
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
@@ -381,7 +381,7 @@
     });
   }
   function fetch_registered_devices(){
-   fetch("http://192.168.8.158/get_registered_devices", { method: 'GET' })
+   fetch("http://localhost/get_registered_devices", { method: 'GET' })
     .then(response => {
         // response.headers.forEach(function(value, name) {
         //     console.log(name + ": " + value);
@@ -409,7 +409,7 @@
   fetch_registered_devices()
   fetch_unregistered_devices()
   function fetch_info_registered_device(device_id){
-   fetch("http://192.168.8.158/get_info_registered_device?device_id=" + device_id, {
+   fetch("http://localhost/get_info_registered_device?device_id=" + device_id, {
      method: 'GET' ,
      // mode: 'no-cors',
      // headers: {
@@ -496,7 +496,7 @@
         // }
     })
     // .catch(function(err) {
-    //     console.info(err + " url: " + "http://192.168.8.158/get_info_registered_device");
+    //     console.info(err + " url: " + "http://localhost/get_info_registered_device");
     // });
   }
 
@@ -574,7 +574,7 @@
 
   function delete_device(evt){
     console.log(evt.currentTarget.device_id)
-     fetch("http://192.168.8.158/registered_device/delete" , {
+     fetch("http://localhost/registered_device/delete" , {
       method: 'POST' ,
       body: evt.currentTarget.device_id
    }
@@ -1112,7 +1112,7 @@
     console.log(params.toString())
     console.log(mech_devices_count)
     // go_back()
-    fetch("http://192.168.8.158/registered_device/add?" + params.toString(), { method: 'GET' })
+    fetch("http://localhost/registered_device/add?" + params.toString(), { method: 'GET' })
   }
   // addRowToMechDevice('mech_device_table_1', 1)
   function showCurrentTime(value){ //установка текущего времени
@@ -1159,7 +1159,7 @@
     const params = new URLSearchParams(data)
     console.log(params.toString())
     // go_back()
-    fetch("http://192.168.8.158/change_device_mode?" + params.toString(), { method: 'GET' })
+    fetch("http://localhost/change_device_mode?" + params.toString(), { method: 'GET' })
   }
   function fill_time_input(input_id )
   {
