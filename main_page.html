@@ -221,7 +221,7 @@
             Незарегистрированные устройства
           </p>
           <button style="border: none; background-color: white; margin-bottom: 15px">
-            <img src="refresh.png" style="width: 30px; height: 30px; " onclick="fetch_unregistered_devices()">
+            <img src="refresh" style="width: 30px; height: 30px; " onclick="fetch_unregistered_devices()">
           </button>
         </div>
       </caption>
@@ -244,7 +244,7 @@
             Зарегистрированные устройства
           </p>
           <button style="border: none; background-color: white; margin-bottom: 15px">
-            <img src="refresh.png" style="width: 30px; height: 30px; " onclick="fetch_registered_devices()">
+            <img src="refresh" style="width: 30px; height: 30px; " onclick="fetch_registered_devices()">
           </button>
         </div>
       </caption>
@@ -327,7 +327,7 @@
       </div>
   </div>
     <div id="register_device_popup">
-          <div id="register_device_window">
+          <div id="register_device_window" style="height: 100px">
             <div style="align-self: center">
 
             <form id="register_device_form">
@@ -436,15 +436,10 @@
         let turn_on = response.headers.get('turn_on').split(';')
         let turn_off = response.headers.get('turn_off').split(';')
         create_config_window(device_name, device_id)
-        let register_device_window_height = document.getElementById("register_device_window").style.height;
-        register_device_window_height=register_device_window_height.replace("px","");
-        register_device_window_height =+ register_device_window_height;
 
         for (let i = 0; i < count_of_sensor_modules; i++){
           console.log(sensor_values[i].split(' '))
           AddSensorDevice(sensors_ids[i], sensors_names[i], sensor_indications[i],sensor_values[i])
-          let n = register_device_window_height
-          register_device_window_height = n + 50 + 'px';
         }
         for (let i = 0; i < count_of_device_modules; i++){
           console.log(count_of_cycles_in_device_moduls[i])
@@ -461,8 +456,7 @@
             turn_on[i],
             turn_off[i]
           )
-          let n = register_device_window_height
-          register_device_window_height = n + 50 + 'px';
+
         }
         let register_device_window = document.getElementById("register_device_window")
         let div3 = document.createElement("div")
@@ -480,9 +474,9 @@
         save_button.device_id = device_id
         // save_button.addEventListener('click', register_device)
         div3.appendChild(save_button)
-        let new_lenght =  (count_of_sensor_modules + count_of_device_modules) * 75
-        let register_device_popup = document.getElementById("register_device_window")
-        register_device_popup.style = "height: " + new_lenght.toString() + "px"
+        // let new_lenght =  (count_of_sensor_modules + count_of_device_modules) * 75
+        // let register_device_popup = document.getElementById("register_device_window")
+        // register_device_popup.style = "height: " + new_lenght.toString() + "px"
         // device_names = device_names.split(',')
         // for (let i = 0; i < count_of_devices; i++){
         //   addRowToRegisteredDevices(device_ids[i], device_names[i]);
@@ -692,6 +686,7 @@
     // AddSensorDevice(1)
     // addMechDevice(1)
     let register_device_window = document.getElementById("register_device_window")
+    register_device_window.style.height = "200%"
     register_device_window.innerHTML = ''
     let header = document.createElement('h2')
     header.textContent = "Просмотр/Редактирование конфигурации"
@@ -703,6 +698,7 @@
     form.id = "register_device_form"
     register_device_window.appendChild(form)
     let div1 = document.createElement("div")
+    register_device_window.style.height = "200px"
     div1.style = "display: flex; flex-direction: row;"
     form.appendChild(div1)
     let label = document.createElement("label")
@@ -726,6 +722,13 @@
   }
 
   function AddSensorDevice(device_id,device_name, indication, values){
+    let register_device_window_height = document.getElementById("register_device_window").style.height;
+    console.log(register_device_window_height)
+    register_device_window_height=register_device_window_height.replace("px","");
+    register_device_window_height =+ register_device_window_height;
+    let n = register_device_window_height
+    register_device_window_height = n + 300 + 'px';
+    document.getElementById("register_device_window").style.height = register_device_window_height
     let config_window = document.getElementById('register_device_form');
     let div = document.createElement('div');
     let header = document.createElement('h2');
@@ -749,7 +752,7 @@
     refresh_button.addEventListener("click",refresh_sensor)
     caption_div.appendChild(refresh_button);
     let refresh_img = document.createElement("img");
-    refresh_img.src = "refresh.png"
+    refresh_img.src = "refresh"
     refresh_img.style = "width: 30px; height: 30px; "
     refresh_button.appendChild(refresh_img);
     let thead = document.createElement("thead");
@@ -878,7 +881,7 @@
     add_row_button.type = "button"
     caption_div.appendChild(add_row_button);
     let add_row_img = document.createElement("img");
-    add_row_img.src = "plus-icon.png"
+    add_row_img.src = "plus_icon"
     add_row_img.style = "width: 30px; height: 30px"
     add_row_button.appendChild(add_row_img);
     let refresh_button = document.createElement("button");
@@ -886,7 +889,7 @@
     refresh_button.type = "button"
     caption_div.appendChild(refresh_button);
     let refresh_img = document.createElement("img");
-    refresh_img.src = "refresh.png"
+    refresh_img.src = "refresh"
     refresh_img.style = "width: 30px; height: 30px;"
     refresh_button.appendChild(refresh_img);
     let thead = document.createElement("thead");
@@ -923,6 +926,14 @@
     config_window.appendChild(table);
     for(let i = 0; i < count_of_cycles_in_device_moduls; i++){
       console.log(table.id,)
+      let register_device_window_height = document.getElementById("register_device_window").style.height;
+      console.log(register_device_window_height)
+      register_device_window_height=register_device_window_height.replace("px","");
+      register_device_window_height =+ register_device_window_height;
+      let n = register_device_window_height
+      register_device_window_height = n + 15 + 'px';
+      console.log(register_device_window_height)
+      document.getElementById("register_device_window").style.height += register_device_window_height
       addRowToMechDevice(
         table.id,
         device_id,
@@ -994,7 +1005,7 @@
     delete_button.table_id = device_table_id
     delete_button.addEventListener("click", delete_row)
     let delete_img = document.createElement("img");
-    delete_img.src = "delete.png"
+    delete_img.src = "delete"
     delete_img.style = "width: 30px; height: 30px; "
     delete_button.appendChild(delete_img);
     newCell.appendChild(pwd_select)
@@ -1042,7 +1053,7 @@
     register_device_window_height=register_device_window_height.replace("px","");
     register_device_window_height =+ register_device_window_height;
     let n = register_device_window_height
-    register_device_window_height = n + 50 + 'px';
+    register_device_window_height = n + 300 + 'px';
     document.getElementById("register_device_window").style.height = register_device_window_height
     set_color_for_delete_img(device_table_id)
   }
