@@ -728,12 +728,13 @@
     register_device_window_height =+ register_device_window_height;
     let n = register_device_window_height
     register_device_window_height = n + 300 + 'px';
+    document.getElementById("register_device_window").style.height = register_device_window_height
     let register_device_popup_height = document.getElementById("register_device_popup").style.height;
     console.log(register_device_popup_height)
     register_device_popup_height=register_device_popup_height.replace("px","");
     register_device_popup_height =+ register_device_popup_height;
     let n_1 = register_device_popup_height
-    register_device_popup_height = n_1 + 300 + 'px';
+    register_device_popup_height = n_1 + 500 + 'px';
     document.getElementById("register_device_popup").style.height = register_device_popup_height
     let config_window = document.getElementById('register_device_form');
     let div = document.createElement('div');
@@ -940,6 +941,14 @@
       register_device_window_height = n + 15 + 'px';
       console.log(register_device_window_height)
       document.getElementById("register_device_window").style.height += register_device_window_height
+      let register_device_popup_height = document.getElementById("register_device_popup").style.height;
+      console.log(register_device_popup_height)
+      register_device_popup_height=register_device_popup_height.replace("px","");
+      register_device_popup_height =+ register_device_popup_height;
+      let n_1 = register_device_popup_height
+      register_device_popup_height = n_1 + 20 + 'px';
+      document.getElementById("register_device_popup").style.height = register_device_popup_height
+      let config_window = document.getElementById('register_device_form');
       addRowToMechDevice(
         table.id,
         device_id,
@@ -1061,6 +1070,14 @@
     let n = register_device_window_height
     register_device_window_height = n + 300 + 'px';
     document.getElementById("register_device_window").style.height = register_device_window_height
+    let register_device_popup_height = document.getElementById("register_device_popup").style.height;
+    console.log(register_device_popup_height)
+    register_device_popup_height=register_device_popup_height.replace("px","");
+    register_device_popup_height =+ register_device_popup_height;
+    let n_1 = register_device_popup_height
+    register_device_popup_height = n_1 + 500 + 'px';
+    document.getElementById("register_device_popup").style.height = register_device_popup_height
+    let config_window = document.getElementById('register_device_form');
     set_color_for_delete_img(device_table_id)
   }
   function register_device(evt){
