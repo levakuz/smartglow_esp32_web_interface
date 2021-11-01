@@ -439,12 +439,12 @@
 
         for (let i = 0; i < count_of_sensor_modules; i++){
           console.log(sensor_values[i].split(' '))
-          AddSensorDevice(sensors_ids[i], sensors_names[i], sensor_indications[i],sensor_values[i])
+          AddSensorDevice(sensors_ids[i] + sensors_names[i], sensors_names[i], sensor_indications[i],sensor_values[i])
         }
         for (let i = 0; i < count_of_device_modules; i++){
           console.log(count_of_cycles_in_device_moduls[i])
           addMechDevice(
-            mech_devices_ids[i],
+            mech_devices_ids[i] + device_name,
             device_name,
             count_of_cycles_in_device_moduls[i],
             pwm_powers[i],
@@ -728,7 +728,13 @@
     register_device_window_height =+ register_device_window_height;
     let n = register_device_window_height
     register_device_window_height = n + 300 + 'px';
-    document.getElementById("register_device_window").style.height = register_device_window_height
+    let register_device_popup_height = document.getElementById("register_device_popup").style.height;
+    console.log(register_device_popup_height)
+    register_device_popup_height=register_device_popup_height.replace("px","");
+    register_device_popup_height =+ register_device_popup_height;
+    let n_1 = register_device_popup_height
+    register_device_popup_height = n_1 + 300 + 'px';
+    document.getElementById("register_device_popup").style.height = register_device_popup_height
     let config_window = document.getElementById('register_device_form');
     let div = document.createElement('div');
     let header = document.createElement('h2');
