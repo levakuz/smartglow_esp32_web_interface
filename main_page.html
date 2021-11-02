@@ -354,7 +354,38 @@
 
 </body>
 <script>
+  let  sensors_names_array = [
+    'Аналоговый сигнал',
+    'Дискретный сигнал',
+    'Заряд аккумулятора',
+    'Влажность воздуха',
+    'Температура воздуха',
+    'Температура воды',
+    'Уровень освещённости',
+    'Мощность ламп',
+    'Мощность насосов',
+    'Показатель pH',
+    'Показатель ЕС',
+    'Показатель eCO2',
+    'Показатель nTVOC',
+    'Давление жидкости'
 
+  ]
+  let devices_names_arr = [
+    'ШИМ сигнал',
+    'Цифровой сигнал',
+    'Вентилятор',
+    'Насосная система',
+    'Фитолампа',
+    'Фитолампа',
+    'Насосная система',
+    'Вентиляция приточная',
+    'Вентиляция вытяжная',
+    'Вентиляция приточно-вытяжная',
+    'Вентиляция приточная',
+    'Вентиляция вытяжная',
+    'Вентиляция приточно-вытяжная',
+  ]
   function fetch_unregistered_devices(){
    fetch("http://" + location.hostname + "/devices/unregistered/get", { method: 'GET'})
     .then(response => {
@@ -445,7 +476,7 @@
           console.log(count_of_cycles_in_device_moduls[i])
           addMechDevice(
             mech_devices_ids[i] + device_name,
-            device_name,
+            devices_names[i],
             count_of_cycles_in_device_moduls[i],
             pwm_powers[i],
             work_mode[i],
@@ -739,7 +770,7 @@
     let config_window = document.getElementById('register_device_form');
     let div = document.createElement('div');
     let header = document.createElement('h2');
-    header.textContent = device_name;
+    header.textContent = sensors_names_array[parseInt(device_name, 10)];
     config_window.appendChild(header);
     let table = document.createElement("table");
     table.id = 'sensor_device_table_' + device_id.toString()
@@ -840,7 +871,10 @@
   ){
     let config_window = document.getElementById('register_device_form');
     let header = document.createElement("h2");
-    header.textContent = device_name;
+    console.log("OKOKOKOKOK")
+    console.log(device_name)
+    console.log(devices_names_arr[parseInt(device_name, 10)])
+    header.textContent = devices_names_arr[parseInt(device_name, 10)];
     let working_mode_div = document.createElement("div");
     working_mode_div.style.display="flex"
     working_mode_div.style.alignItems="center"
