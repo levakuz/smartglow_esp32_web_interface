@@ -1219,6 +1219,8 @@
     let turn_ons =''
     let turn_off =''
     let turn_offs =''
+    let total_count_of_cycles =''
+    let count_of_cycles = 0
     for (let i = 0; i <= form_elems.length; i++){
       if (form_elems[i]) {
         if (form_elems[i] === "device_name"){
@@ -1252,11 +1254,14 @@
         }
         if (form_elems[i].id.includes('pwd_input')){
           if (mech_device_id !== form_elems[i].id.replace('pwd_input','') && mech_devices_ids !== ''){
+            total_count_of_cycles += count_of_cycles.toString()
             pwm_powers += ';'
             cycle_begins += ';'
             cycle_ends += ';'
-            turn_on += ';'
-            turn_off += ';'
+            turn_ons += ';'
+            turn_offs += ';'
+            total_count_of_cycles += ','
+            count_of_cycles = 0
           }
           if (pwm_powers === '' || pwm_powers.slice(-1) === ';') {
             mech_device_name = form_elems[i].device_name
@@ -1274,8 +1279,13 @@
           }
           if (pwm_powers === '' || pwm_powers.slice(-1) === ';') {
             pwm_powers += form_elems[i].value
-            mech_devices_count +=1}
-          else{pwm_powers += ',' + form_elems[i].value}
+            mech_devices_count +=1
+            count_of_cycles +=1
+          }
+          else{
+            pwm_powers += ',' + form_elems[i].value
+            count_of_cycles +=1
+          }
 
         }
         if(form_elems[i].id.includes('cycle_begin')){
@@ -1293,7 +1303,7 @@
           let time_type_select_on = form_elems[i].value
           if (time_type_select_on === 'минуты'){turn_on = parseInt(turn_on,10)*60}
           if (time_type_select_on === 'часы'){turn_on = parseInt(turn_on,10)*3600}
-          if (turn_ons === ''){ turn_ons += turn_on}
+          if (turn_ons === '' || turn_ons.slice(-1) === ';'){ turn_ons += turn_on}
           else{turn_ons += ',' + turn_on}
         }
         if(form_elems[i].id.includes('time_select')){
@@ -1303,16 +1313,19 @@
           let time_type_select_on = form_elems[i].value
           if (time_type_select_on === 'минуты'){turn_off = parseInt(turn_off,10)*60}
           if (time_type_select_on === 'часы'){turn_off = parseInt(turn_off,10)*3600}
-          if (turn_offs === ''){ turn_offs += turn_off}
+          if (turn_offs === '' || turn_offs.slice(-1) === ';'){ turn_offs += turn_off}
           else{turn_offs += ',' + turn_off}
         }
       }
     }
+    total_count_of_cycles += count_of_cycles.toString()
     data["device_id"] = device_id
     data["count_of_sensor_modules"] = count_of_sensor_modules
     data["sensors_names"] = sensors_names
     data["sensors_ids"] = sensors_ids
     data["sensors_values"] = sensors_values
+    data["count_of_device_modules"] = mech_devices_count
+    data["count_of_cycles_in_device_moduls"] = total_count_of_cycles
     data["devices_names"] = mech_devices_names
     data["mech_devices_ids"] = mech_devices_ids
     data["pwm_powers"] = pwm_powers
