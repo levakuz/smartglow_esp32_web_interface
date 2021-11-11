@@ -833,6 +833,7 @@
     let config_window = document.getElementById('register_device_form');
     let div = document.createElement('div');
     let header = document.createElement('h2');
+    header.id = "sensor_name_" + device_name
     header.textContent = sensors_names_array[parseInt(device_name, 10)];
     config_window.appendChild(header);
     let table = document.createElement("table");
@@ -880,6 +881,7 @@
     label.style = "margin-right: 10px";
     label.textContent = "Частота отправки";
     input.id = "channel_time_value" + device_id.toString();
+    input.device_name = device_name
     input.type = "text";
     input.list = "time_values" + device_id.toString();
     let p = document.createElement("p");
@@ -1027,6 +1029,7 @@
       let config_window = document.getElementById('register_device_form');
       addRowToMechDevice(
         table.id,
+        device_name,
         device_id,
         pwm_powers.split(',')[i],
         cycle_begin.split(',')[i],
@@ -1058,7 +1061,7 @@
 
   }
   // addMechDevice(1)
-  function addRowToMechDevice(device_table_id, device_id, pwm_powers, cycle_begin, cycle_end, turn_on, turn_off, i){
+  function addRowToMechDevice(device_table_id, device_name, device_id, pwm_powers, cycle_begin, cycle_end, turn_on, turn_off, i){
     let tableRef = document.getElementById(device_table_id);
     // Insert a row in the table at row index 0
     let newRow = tableRef.insertRow(1);
@@ -1075,6 +1078,7 @@
     newCell6.style="width: 50px"
     let pwd_select = document.createElement("select");
     pwd_select.id = 'pwd_input' + device_id.toString()
+    pwd_select.device_name = device_name
     let input1= document.createElement("input");
     let input2 = document.createElement("input");
     let select_time_on = document.createElement("select");
@@ -1178,17 +1182,35 @@
   }
   function save_form(device_id){
     let form_elems = document.getElementById("register_device_form").elements
+    console.log(document.getElementById("register_device_form").children)
+    console.log(form_elems)
+     // for (let i = 0; i <= document.getElementById("register_device_form").children.length; i++){
+     //  if (document.getElementById("register_device_form").children[i].id.includes('sensor_name_')) {
+     //    sensor_name = i.id.replace('sensor_name_', '')
+     //   if(sensor_names === ''){
+     //        sensor_names += sensor_name
+     //      }
+     //      else{
+     //        sensor_names += ',' + sensor_name
+     //      }
+     //  }
+     //
+     // }
     const formData = new FormData(document.getElementById("register_device_form"))
     let arr = []
     let data = {}
     let query_string = ''
     let sensor_id = ''
+    let sensor_name = ''
     let mech_device_id = ''
     let count_of_sensor_modules = 0
     let sensors_ids = ''
+    let sensors_names = ''
     let sensors_values = ''
     let channel_time_value = ''
     let mech_devices_ids = ''
+    let mech_devices_names = ''
+    let mech_device_name = ''
     let mech_devices_count = 0
     let pwm_powers = ''
     let cycle_begins =''
@@ -1203,14 +1225,21 @@
           data[form_elems[i].id] = form_elems[i].value
         }
         if (form_elems[i].id.includes('channel_time_value')){
-          sensor_id = form_elems[i].id.replace('channel_time_value','')
+          sensor_name = form_elems[i].device_name
+          sensor_id = form_elems[i].id.replace('channel_time_value','').replace(sensor_name,'')
+          console.log(sensor_name)
           if(sensors_ids === ''){
             sensors_ids += sensor_id
           }
           else{
             sensors_ids += ',' + sensor_id
           }
-
+          if(sensors_names === ''){
+            sensors_names += sensor_name
+          }
+          else{
+            sensors_names += ',' + sensor_name
+          }
           count_of_sensor_modules += 1
           channel_time_value = form_elems[i].value
         }
@@ -1229,9 +1258,20 @@
             turn_on += ';'
             turn_off += ';'
           }
-          mech_device_id = form_elems[i].id.replace('pwd_input','')
-          if(mech_devices_ids === ''){mech_devices_ids += mech_device_id}
-          else if (!mech_devices_ids.includes(mech_device_id)){mech_devices_ids += ',' + mech_device_id}
+          if (pwm_powers === '' || pwm_powers.slice(-1) === ';') {
+            mech_device_name = form_elems[i].device_name
+            mech_device_id = form_elems[i].id.replace('pwd_input', '').replace(mech_device_name, '')
+            if (mech_devices_ids === '') {
+              mech_devices_ids += mech_device_id
+            } else {
+              mech_devices_ids += ',' + mech_device_id
+            }
+            if (mech_devices_names === '') {
+              mech_devices_names += mech_device_name
+            } else {
+              mech_devices_names += ',' + mech_device_name
+            }
+          }
           if (pwm_powers === '' || pwm_powers.slice(-1) === ';') {
             pwm_powers += form_elems[i].value
             mech_devices_count +=1}
@@ -1270,8 +1310,10 @@
     }
     data["device_id"] = device_id
     data["count_of_sensor_modules"] = count_of_sensor_modules
+    data["sensors_names"] = sensors_names
     data["sensors_ids"] = sensors_ids
     data["sensors_values"] = sensors_values
+    data["devices_names"] = mech_devices_names
     data["mech_devices_ids"] = mech_devices_ids
     data["pwm_powers"] = pwm_powers
     data["cycle_begin"] = cycle_begins
