@@ -462,10 +462,11 @@
         create_config_window('', device_id)
 
         for (let i = 0; i < count_of_sensor_modules; i++){
-          AddSensorDevice(sensors_ids[i] + sensors_names[i], sensors_names[i], sensor_indications[i],sensor_values[i])
+          AddSensorDevice("register",sensors_ids[i] + sensors_names[i], sensors_names[i], sensor_indications[i],sensor_values[i])
         }
         for (let i = 0; i < count_of_device_modules; i++){
           addMechDevice(
+            'register',
             mech_devices_ids[i] + '',
             devices_names[i],
             count_of_cycles_in_device_moduls[i],
@@ -530,10 +531,11 @@
         create_config_window(device_name, device_id)
 
         for (let i = 0; i < count_of_sensor_modules; i++){
-          AddSensorDevice(sensors_ids[i] + sensors_names[i], sensors_names[i], sensor_indications[i],sensor_values[i])
+          AddSensorDevice('edit',sensors_ids[i] + sensors_names[i], sensors_names[i], sensor_indications[i],sensor_values[i])
         }
         for (let i = 0; i < count_of_device_modules; i++){
           addMechDevice(
+            'edit',
             mech_devices_ids[i] + device_name,
             devices_names[i],
             count_of_cycles_in_device_moduls[i],
@@ -817,7 +819,7 @@
     window.location.href='#register_device_popup'
   }
 
-  function AddSensorDevice(device_id,device_name, indication, values){
+  function AddSensorDevice(form_type,device_id,device_name, indication, values){
     let register_device_window_height = document.getElementById("register_device_window").style.height;
     register_device_window_height=register_device_window_height.replace("px","");
     register_device_window_height =+ register_device_window_height;
@@ -863,8 +865,10 @@
     thead.appendChild(tr);
     let th1 = document.createElement("th")
     th1.style="width:200px"
-    th1.textContent = "Последнее показание"
-    tr.appendChild(th1);
+    if(form_type === "edit"){
+      th1.textContent = "Последнее показание"
+      tr.appendChild(th1);
+    }
     let th2 = document.createElement("th")
     th2.textContent = "Частота отправки"
     tr.appendChild(th2);
@@ -873,8 +877,14 @@
     let tr2 = document.createElement("tr")
     tbody.appendChild(tr2)
     let newRow = table.insertRow(1);
-    let newCell = newRow.insertCell(0);
-    let newCell1 = newRow.insertCell(1);
+    let newCell
+    let newCell1
+    if (form_type === 'edit') {
+      newCell = newRow.insertCell(0);
+      newCell1 = newRow.insertCell(1);
+    }
+    else{newCell = newRow.insertCell(0);}
+
     let input = document.createElement("select");
     let label = document.createElement("label");
     label.for = "time_value";
@@ -884,10 +894,12 @@
     input.device_name = device_name
     input.type = "text";
     input.list = "time_values" + device_id.toString();
-    let p = document.createElement("p");
-    p.textContent = indication
-    p.id = "sensor_indications_" + device_id
-    newCell.appendChild(p)
+    if (form_type === 'edit') {
+      let p = document.createElement("p");
+      p.textContent = indication
+      p.id = "sensor_indications_" + device_id
+      newCell.appendChild(p)
+    }
     input.style = "width: 75px; margin-right: 10px";
     let datalist = document.createElement("datalist");
     datalist.id = "time_values" + device_id.toString();
@@ -906,7 +918,10 @@
       values = values / 60
     }
     else{time_type = 'часы'}
-    newCell1.appendChild(div);
+    if (form_type === 'edit') {
+      newCell1.appendChild(div);
+    }
+    else {newCell.appendChild(div);}
     div.appendChild(label);
     div.appendChild(input);
     div.appendChild(datalist);
@@ -919,6 +934,7 @@
   }
   // AddSensorDevice(1)
   function addMechDevice(
+    form_type,
     device_id,
     device_name,
     count_of_cycles_in_device_moduls,
@@ -935,34 +951,37 @@
     let config_window = document.getElementById('register_device_form');
     let header = document.createElement("h2");
     header.textContent = devices_names_arr[parseInt(device_name, 10)];
-    let working_mode_div = document.createElement("div");
-    working_mode_div.style.display="flex"
-    working_mode_div.style.alignItems="center"
-    working_mode_div.style.flexDirection="column"
-    let working_mode_text = document.createTextNode(work_mode);
-    let working_mode_text_descr = document.createTextNode("Режим работы: ");
-    let sub_div = document.createElement("div");
-    sub_div.style="display: flex; flex-direction: row"
-    sub_div.appendChild(working_mode_text_descr)
-    sub_div.appendChild(working_mode_text)
-    let working_mode_button = document.createElement("button");
-    working_mode_button.innerHTML = "Изменить режим работы";
-    working_mode_button.style.cssText = "      margin-top: 20px;\n" +
-    "      background: #4C5DB8;\n" +
-    "      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);\n" +
-    "      border-radius: 15px;\n" +
-    "      width: 200px;\n" +
-    "      height: 39px;\n" +
-    "      margin-left: 0px;";
-    working_mode_button.addEventListener ("click", create_change_device_mode_window);
-    working_mode_button.device_id = device_id
-    working_mode_button.device_name = device_name
-    working_mode_button.status = status
-    working_mode_button.manual_value = manual_value
-    working_mode_button.work_mode = work_mode
-    working_mode_button.type ='button'
-    working_mode_div.appendChild(sub_div);
-    working_mode_div.appendChild(working_mode_button);
+    let working_mode_div
+    if (form_type === 'edit') {
+      working_mode_div = document.createElement("div");
+      working_mode_div.style.display = "flex"
+      working_mode_div.style.alignItems = "center"
+      working_mode_div.style.flexDirection = "column"
+      let working_mode_text = document.createTextNode(work_mode);
+      let working_mode_text_descr = document.createTextNode("Режим работы: ");
+      let sub_div = document.createElement("div");
+      sub_div.style = "display: flex; flex-direction: row"
+      sub_div.appendChild(working_mode_text_descr)
+      sub_div.appendChild(working_mode_text)
+      let working_mode_button = document.createElement("button");
+      working_mode_button.innerHTML = "Изменить режим работы";
+      working_mode_button.style.cssText = "      margin-top: 20px;\n" +
+        "      background: #4C5DB8;\n" +
+        "      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);\n" +
+        "      border-radius: 15px;\n" +
+        "      width: 200px;\n" +
+        "      height: 39px;\n" +
+        "      margin-left: 0px;";
+      working_mode_button.addEventListener("click", create_change_device_mode_window);
+      working_mode_button.device_id = device_id
+      working_mode_button.device_name = device_name
+      working_mode_button.status = status
+      working_mode_button.manual_value = manual_value
+      working_mode_button.work_mode = work_mode
+      working_mode_button.type = 'button'
+      working_mode_div.appendChild(sub_div);
+      working_mode_div.appendChild(working_mode_button);
+    }
     let table = document.createElement("table");
     table.id = 'mech_device_table_' + device_id.toString()
     table.classList.add("styled-table");
@@ -978,21 +997,21 @@
     caption_text.style = "font-size: 18px;"
     caption_div.appendChild(caption_text);
     let add_row_button = document.createElement("button");
-    add_row_button.style = "border: none; background-color: white; margin-left: 10px; margin-right: 350px; margin-bottom: 15px"
+    add_row_button.style = "border: none; background-color: white; margin-left: 10px; margin-right: 550px; margin-bottom: 15px"
     add_row_button.type = "button"
     caption_div.appendChild(add_row_button);
     let add_row_img = document.createElement("img");
     add_row_img.src = "plus_icon"
     add_row_img.style = "width: 30px; height: 30px"
     add_row_button.appendChild(add_row_img);
-    let refresh_button = document.createElement("button");
-    refresh_button.style = "border: none; background-color: white; margin-left: 200px; margin-bottom: 15px"
-    refresh_button.type = "button"
-    caption_div.appendChild(refresh_button);
-    let refresh_img = document.createElement("img");
-    refresh_img.src = "refresh"
-    refresh_img.style = "width: 30px; height: 30px;"
-    refresh_button.appendChild(refresh_img);
+    // let refresh_button = document.createElement("button");
+    // refresh_button.style = "border: none; background-color: white; margin-left: 200px; margin-bottom: 15px"
+    // refresh_button.type = "button"
+    // caption_div.appendChild(refresh_button);
+    // let refresh_img = document.createElement("img");
+    // refresh_img.src = "refresh"
+    // refresh_img.style = "width: 30px; height: 30px;"
+    // refresh_button.appendChild(refresh_img);
     let thead = document.createElement("thead");
     table.appendChild(thead);
     let tr = document.createElement("tr")
@@ -1023,7 +1042,7 @@
     let tr2 = document.createElement("tr")
     tbody.appendChild(tr2)
     config_window.appendChild(header);
-    config_window.appendChild(working_mode_div);
+    if (form_type === 'edit'){config_window.appendChild(working_mode_div);}
     config_window.appendChild(table);
     for(let i = 0; i < count_of_cycles_in_device_moduls; i++){
       let config_window = document.getElementById('register_device_form');
