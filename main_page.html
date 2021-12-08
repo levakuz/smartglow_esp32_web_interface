@@ -1083,7 +1083,7 @@
   function send_edit_request_registered_device(evt) {
     let device_id  = evt.currentTarget.device_id
     let params = save_form(device_id)
-    params += '&control_device_name=' + evt.currentTarget.device_name
+    params += '&control_device_name=' + document.getElementById('device_name').value
     fetch("http://" + location.hostname + "/registered_device/edit?" + params.toString(), { method: 'GET'  })
     console.log("/registered_device/edit?" + params.toString())
   }
